@@ -1,0 +1,9 @@
+{
+  "name": "CYDERES CI Release Workflow",
+  "description": "CYDERES CI Release workflow template.",
+  "iconName": "example-icon",
+  "categories": [
+  ],
+  "filePatterns": [
+  ]
+}
