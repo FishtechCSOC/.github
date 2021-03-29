@@ -1,0 +1,46 @@
+# This is a basic workflow to help you get started with Actions
+
+name: release
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  release:
+    types: # This configuration does not affect the page_build event above
+      - created
+
+  # Allows you to run this workflow manually from the Actions tab
+  #workflow_dispatch:
+
+# update change log
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # To use this repository's private action, you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 10
+      - name: Get Previous tag
+        id: previoustag
+        run:  |
+              pretag=$(git rev-list --tags --skip=1 --max-count=1)
+              echo $pretag
+              echo "::set-output name=tag::$pretag"
+      - name: Generate changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v1.0.0
+        with:
+          base-ref: ${{ steps.previoustag.outputs.tag }}
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: update release
+        id: update_release
+        uses: tubone24/update_release@v1.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          body: ${{ steps.changelog.outputs.changelog }}
+
+
+
