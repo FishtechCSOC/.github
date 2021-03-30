@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           # This is what i'm just testing changing
-          fetch-depth: 15
+          fetch-depth: 10
       - name: Get Previous tag
         id: previoustag
         run:  |
