@@ -1,0 +1,18 @@
+name: Sync
+on:
+  push:
+    branches:
+      - main
+jobs:
+  files:
+    name: Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Files Sync Action
+        uses: adrianjost/files-sync-action@v1.4.1
+        with:
+          GITHUB_TOKEN: '${{ secrets.CI_GITHUB_TOKEN_PUBLIC }}'
+          FILE_PATTERNS: |-
+            ^\.github\/workflows\/ci-release\.yml$
+          TARGET_REPOS: |-
+            FishtechCSOC/github_action_test
