@@ -21,15 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          # This is what i'm just testing changing
-          fetch-depth: 15
+          fetch-depth: 10
       - name: Get Previous tag
         id: previoustag
         run:  |
               pretag=$(git rev-list --tags --skip=1 --max-count=1)
               echo $pretag
               echo "::set-output name=tag::$pretag"
-      - name: Generate changelog
+      - name: Generate changelog NATE IS HERE
         id: changelog
         uses: metcalfc/changelog-generator@v1.0.0
         with:
