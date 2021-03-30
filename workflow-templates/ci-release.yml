@@ -13,9 +13,6 @@ on:
   #workflow_dispatch:
 
 # update change log
-# ################ LOOK HERE ################
-# New comment that should get pushed to downstream repos
-# ################ LOOK HERE ################
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -24,7 +21,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 10
+          # This is what i'm just testing changing
+          fetch-depth: 15
       - name: Get Previous tag
         id: previoustag
         run:  |
