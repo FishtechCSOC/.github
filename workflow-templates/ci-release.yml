@@ -28,7 +28,7 @@ jobs:
               pretag=$(git rev-list --tags --skip=1 --max-count=1)
               echo $pretag
               echo "::set-output name=tag::$pretag"
-      - name: Generate changelog NATE IS HERE
+      - name: Generate changelog
         id: changelog
         uses: metcalfc/changelog-generator@v1.0.0
         with:
