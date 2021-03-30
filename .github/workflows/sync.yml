@@ -15,6 +15,6 @@ jobs:
           SRC_ROOT: /workflow-templates/
           TARGET_ROOT: /.github/workflows/
           FILE_PATTERNS: |-
-            ^.github/workflows/ci-*
+            ci-*
           TARGET_REPOS: |-
             FishtechCSOC/github_action_test
