@@ -18,4 +18,3 @@ jobs:
             ci-*
           TARGET_REPOS: |-
             FishtechCSOC/github_action_test
-            FishtechCSOC/kibana-customer-space-setup
