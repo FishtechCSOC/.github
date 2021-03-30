@@ -4,8 +4,8 @@ on:
     branches:
       - main
 jobs:
-  files:
-    name: Files
+  sync-ci-files:
+    name: Sync CI Files
     runs-on: ubuntu-latest
     steps:
       - name: Files Sync Action
@@ -16,3 +16,5 @@ jobs:
             ^.github/workflows/ci-*.*
           TARGET_REPOS: |-
             FishtechCSOC/github_action_test
+          SRC_ROOT: /workflow-templates/
+          TARGET_ROOT: /.github/workflows/
