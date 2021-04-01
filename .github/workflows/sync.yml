@@ -25,6 +25,9 @@ jobs:
             FishtechCSOC/.github
             FishtechCSOC/github_action_test
             FishtechCSOC/CYCLOPS-provisioning
+            FishtechCSOC/cyderes-platform-infrastructure-aws
+            FishtechCSOC/cyderes-platform-infrastructure-gcp
+            FishtechCSOC/cyderes-platform-infrastructure-azures
       - name: Sync CI Python
         uses: adrianjost/files-sync-action@v1.4.2
         with:
