@@ -1,0 +1,9 @@
+{
+    "name": "CYDERES CI Python Build Workflow",
+    "description": "CYDERES CI Python Build workflow template.",
+    "iconName": "example-icon",
+    "categories": [
+    ],
+    "filePatterns": [
+    ]
+  }
