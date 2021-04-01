@@ -1,10 +1,13 @@
 name: Python package
 
-on:
-  push:
-    branches:
-      - main
-      - master
+# We may not want to run this on release but rather
+# take the artifact from the dev build and copy/push/promote
+# it to wherever production needs to go. You know don't
+# build it again type of thing if it's working in dev
+on: [
+    pull_request,
+    release
+  ]
 
 jobs:
   build:
