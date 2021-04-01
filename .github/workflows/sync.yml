@@ -22,12 +22,11 @@ jobs:
           FILE_PATTERNS: |-
             ci-release*
           TARGET_REPOS: |-
-            FishtechCSOC/.github
             FishtechCSOC/github_action_test
             FishtechCSOC/CYCLOPS-provisioning
             FishtechCSOC/cyderes-platform-infrastructure-aws
             FishtechCSOC/cyderes-platform-infrastructure-gcp
-            FishtechCSOC/cyderes-platform-infrastructure-azures
+            FishtechCSOC/cyderes-platform-infrastructure-azure
       - name: Sync CI Python
         uses: adrianjost/files-sync-action@v1.4.2
         with:
