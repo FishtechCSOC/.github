@@ -3,19 +3,31 @@ on:
   push:
     branches:
       - main
+      - master
 jobs:
   sync-ci-files:
     name: Sync CI Files
     runs-on: ubuntu-latest
     steps:
-      - name: Files Sync Action
+      - name: Sync CI Release
         uses: adrianjost/files-sync-action@v1.4.2
         with:
           GITHUB_TOKEN: '${{ secrets.CI_GITHUB_TOKEN_PUBLIC }}'
           SRC_ROOT: /workflow-templates/
           TARGET_ROOT: /.github/workflows/
           FILE_PATTERNS: |-
-            ci-*
+            ci-release*
           TARGET_REPOS: |-
+            FishtechCSOC/.github
             FishtechCSOC/github_action_test
+            FishtechCSOC/CYCLOPS-provisioning
+      - name: Sync CI Python
+        uses: adrianjost/files-sync-action@v1.4.2
+        with:
+          GITHUB_TOKEN: '${{ secrets.CI_GITHUB_TOKEN_PUBLIC }}'
+          SRC_ROOT: /workflow-templates/
+          TARGET_ROOT: /.github/workflows/
+          FILE_PATTERNS: |-
+            ci-python-build*
+          TARGET_REPOS: |-
             FishtechCSOC/CYCLOPS-provisioning
