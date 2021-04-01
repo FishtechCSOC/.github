@@ -1,9 +1,13 @@
 name: Sync
+
+# On push here with main/master indicates a PR happened because
+# of branch protections.
 on:
   push:
     branches:
       - main
       - master
+
 jobs:
   sync-ci-files:
     name: Sync CI Files
