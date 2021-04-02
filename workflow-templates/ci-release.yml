@@ -33,7 +33,7 @@ jobs:
         uses: metcalfc/changelog-generator@v1.0.0
         with:
           base-ref: ${{ steps.previoustag.outputs.tag }}
-          myToken: ${{ secrets.GITHUB_TOKEN }}
+          myToken: ${{ secrets.CI_GITHUB_TOKEN_PUBLIC }}
       - name: update release
         id: update_release
         uses: tubone24/update_release@v1.0
