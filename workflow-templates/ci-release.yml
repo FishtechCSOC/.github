@@ -24,7 +24,7 @@ jobs:
         id: previoustag
         run:  |
               git fetch --depth=5 --prune --tags
-              pretag=$(git tag -l --sort version:refname | tail -n 2 | head -n 1)
+              pretag=$(git tag -l --sort=creatordate | tail -n 2 | head -n 1)
               echo $pretag
               echo "::set-output name=tag::$pretag"
       - name: Generate changelog
