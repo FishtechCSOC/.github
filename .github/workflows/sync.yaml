@@ -1,4 +1,4 @@
--name: sync
+name: sync
 
 # On push here with main/master indicates a PR happened because
 # of branch protections.
