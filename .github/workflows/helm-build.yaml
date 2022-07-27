@@ -23,7 +23,7 @@ jobs:
     - name: Check for git diffs
       id: chart-changes
       run: |
-        if [[ -n "$(git --no-pager diff --name-only origin/${GITHUB_BASE_REF} -- charts | tr -d '\n\r')" ]]; then
+        if [[ -n "$(git --no-pager diff --name-only origin/${GITHUB_REF_NAME} -- charts | tr -d '\n\r')" ]]; then
           echo "diff detected, proceeding with version compare"
           echo "::set-output name=CHART_CHANGES::true"
           echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
