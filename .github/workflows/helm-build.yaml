@@ -18,8 +18,6 @@ jobs:
       name: Checkout current branch
       with:
         fetch-depth: 0
-    - name: Check env
-      run: env
     - name: Check for git diffs
       id: chart-changes
       run: |
