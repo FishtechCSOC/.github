@@ -4,7 +4,6 @@ on:
   workflow_call:
     inputs:
       # Which ArgoCD instance will deploy the Helm chart
-      # ex: "argocd.dev-cyderes.io"
       ARGOCD_API_URL:
         required: true
         type: string
@@ -21,7 +20,6 @@ on:
         type: string
 
       # Destination namespace to which the Helm chart is deployed
-      # ex: 'client-portal'
       ARGOCD_DEST_NAMESPACE:
         required: true
         type: string
