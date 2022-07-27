@@ -82,7 +82,7 @@ jobs:
     - name: Pull chart repo
       uses: actions/checkout@master
     - name: Push Helm chart to Artifact Registry
-      uses: FishtechCSOC/.github/.github/actions/helm-push@DEVOPS-919_Fix_Diff_Testing
+      uses: FishtechCSOC/.github/.github/actions/helm-push@main
       with:
         useOCIRegistry: true
         username: '_json_key_base64'
