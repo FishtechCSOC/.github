@@ -24,6 +24,11 @@ on:
         required: true
         type: string
 
+      ARGOCD_VALUES_FILE:
+        required: false
+        type: string
+        default: 'values.yaml'
+
     secrets:
       # Credentials to use for ArgoCD instance. Should be secrets available to calling workflow project.
       ARGOCD_USERNAME:
@@ -71,7 +76,7 @@ jobs:
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app create ${{ needs.get-chart-properties.outputs.chart_name }}
-          options: --project ${{ inputs.ARGOCD_PROJECT }} --server ${{ inputs.ARGOCD_API_URL }} --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} --repo ${{ inputs.ARGOCD_REPO }} --revision ${{ needs.get-chart-properties.outputs.chart_version }} --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} --sync-option Prune=true --sync-option CreateNamespace=true --upsert
+          options: --project ${{ inputs.ARGOCD_PROJECT }} --server ${{ inputs.ARGOCD_API_URL }} --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} --repo ${{ inputs.ARGOCD_REPO }} --revision ${{ needs.get-chart-properties.outputs.chart_version }} --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} --values ${{ inputs.ARGOCD_VALUES_FILE }} --sync-option Prune=true --sync-option CreateNamespace=true --sync-policy auto --upsert
       - name: Patch ArgoCD Application for ESO
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
