@@ -108,8 +108,9 @@ jobs:
   sync-app-dev:
     name: Sync application in ArgoCD Dev
     needs:
-      - create-app
       - get-chart-properties
+      - helm-package
+      - create-app
     runs-on: self-hosted
     steps:
       - name: ArgoCD login
