@@ -24,10 +24,29 @@ on:
         required: true
         type: string
 
+      # Values file to use for the chart
       ARGOCD_VALUES_FILE:
         required: false
         type: string
         default: 'values.yaml'
+
+      # appVersion used to package the chart. Defaults to 'latest' for dev, GitHub release tag for Prod
+      APP_VERSION:
+        required: false
+        type: string
+        default: 'latest'
+
+  # GCP Artifact Repository URL used by ArgoCD, which requires that the prefix be omitted
+      GCP_ARTIFACT_REGISTRY:
+        required: false
+        type: string
+        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+
+  # Same thing, but without 'oci://'' prefix
+      ARGOCD_REPO:
+        required: false
+        type: string
+        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
 
     secrets:
       # Credentials to use for ArgoCD instance. Should be secrets available to calling workflow project.
@@ -35,14 +54,17 @@ on:
         required: true
       ARGOCD_PASSWORD:
         required: true
-
-env:
-  # GCP Artifact Repository URL used by ArgoCD, which requires that the prefix be omitted
-  ARGOCD_REPO: 'us-central1-docker.pkg.dev/cyderes-prod/cyderes-helm-repo'
-  # Same thing, but with 'oci://'' prefix
-  GCP_ARTIFACT_REGISTRY: 'oci://us-central1-docker.pkg.dev/cyderes-prod/cyderes-helm-repo'
+      GCP_ARGO_SERVICE_ACCOUNT:
+        required: true
 
 jobs:
+  helm-package:
+    name: "Helm Package"
+    uses: FishtechCSOC/.github/.github/workflows/helm-build.yaml@main
+    with:
+      GCP_ARTIFACT_REGISTRY: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
   get-chart-properties:
     name: Get Helm chart properties
     runs-on: self-hosted
@@ -62,6 +84,7 @@ jobs:
   create-app:
     name: Create/update app in ArgoCD Dev
     needs:
+      - helm-package
       - get-chart-properties
     runs-on: self-hosted
     steps:
