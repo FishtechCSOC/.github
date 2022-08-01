@@ -106,7 +106,7 @@ jobs:
         with:
           command: app patch ${{ needs.get-chart-properties.outputs.chart_name }}
           options: --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}' --type merge
-  sync-app-dev:
+  sync-app-prod:
     name: Sync application in ArgoCD Prod
     needs:
       - get-chart-properties
