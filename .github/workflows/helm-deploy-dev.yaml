@@ -58,6 +58,13 @@ on:
         required: true
 
 jobs:
+  helm-package:
+    name: "Helm Package"
+    uses: FishtechCSOC/.github/.github/workflows/helm-build.yaml@main
+    with:
+      GCP_ARTIFACT_REGISTRY: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
   get-chart-properties:
     name: Get Helm chart properties
     runs-on: self-hosted
