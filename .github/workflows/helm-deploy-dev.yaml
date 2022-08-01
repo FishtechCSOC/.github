@@ -77,7 +77,6 @@ jobs:
   create-app:
     name: Create/update app in ArgoCD Dev
     needs:
-      - helm-package
       - get-chart-properties
     runs-on: self-hosted
     steps:
@@ -102,7 +101,6 @@ jobs:
     name: Sync application in ArgoCD Dev
     needs:
       - get-chart-properties
-      - helm-package
       - create-app
     runs-on: self-hosted
     steps:
