@@ -2,6 +2,15 @@ name: Build and Package
 
 on:
   workflow_call:
+    inputs:
+      GCP_ARTIFACT_REGISTRY:
+        required: false
+        type: string
+        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+      APP_VERSION:
+        required: false
+        type: string
+        default: "latest"
     secrets:
       GCP_ARGO_SERVICE_ACCOUNT:
         required: true
@@ -86,7 +95,8 @@ jobs:
         username: '_json_key_base64'
         password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
         access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        registry-url: ${{ env.GCP_ARTIFACT_REGISTRY }}
+        registry-url: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
         force: true
         chart-folder: charts/${{ needs.check-chart-diffs.outputs.chart_name }}
         version: ${{ needs.check-chart-diffs.outputs.chart_version }}
+        appVersion: ${{ inputs.APP_VERSION }}

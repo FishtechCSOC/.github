@@ -1,4 +1,4 @@
-name: Deploy to Development
+name: Deploy to Production
 
 on:
   workflow_call:
@@ -40,13 +40,13 @@ on:
       GCP_ARTIFACT_REGISTRY:
         required: false
         type: string
-        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+        default: 'oci://us-central1-docker.pkg.dev/cyderes-prod/cyderes-helm-repo'
 
   # Same thing, but without 'oci://'' prefix
       ARGOCD_REPO:
         required: false
         type: string
-        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+        default: 'us-central1-docker.pkg.dev/cyderes-prod/cyderes-helm-repo'
 
     secrets:
       # Credentials to use for ArgoCD instance. Should be secrets available to calling workflow project.
@@ -63,6 +63,7 @@ jobs:
     uses: FishtechCSOC/.github/.github/workflows/helm-build.yaml@main
     with:
       GCP_ARTIFACT_REGISTRY: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+      APP_VERSION: ${{ env.GITHUB_REF_NAME }}
     secrets:
       GCP_ARGO_SERVICE_ACCOUNT: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
   get-chart-properties:
@@ -99,14 +100,14 @@ jobs:
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app create ${{ needs.get-chart-properties.outputs.chart_name }}
-          options: --project ${{ inputs.ARGOCD_PROJECT }} --server ${{ inputs.ARGOCD_API_URL }} --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} --repo ${{ inputs.ARGOCD_REPO }} --revision ${{ needs.get-chart-properties.outputs.chart_version }} --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} --values ${{ inputs.ARGOCD_VALUES_FILE }} --sync-option Prune=true --sync-option CreateNamespace=true --sync-policy auto --upsert
+          options: --project ${{ inputs.ARGOCD_PROJECT }} --server ${{ inputs.ARGOCD_API_URL }} --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} --repo ${{ inputs.ARGOCD_REPO }} --revision ${{ needs.get-chart-properties.outputs.chart_version }} --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} --values ${{ inputs.ARGOCD_VALUES_FILE }} --sync-option Prune=true --sync-option CreateNamespace=true --upsert
       - name: Patch ArgoCD Application for ESO
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app patch ${{ needs.get-chart-properties.outputs.chart_name }}
           options: --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}' --type merge
-  sync-app-dev:
-    name: Sync application in ArgoCD Dev
+  sync-app-prod:
+    name: Sync application in ArgoCD Prod
     needs:
       - get-chart-properties
       - helm-package
