@@ -85,7 +85,7 @@ jobs:
       - check-chart-diffs
       - check-chart-versions
     if: |
-      ${{ contains(needs.check-chart-versions.outputs.package-charts, 'true') && github.event.pull_request.merged }} || github.event_name == 'release'
+      ${{ contains(needs.check-chart-versions.outputs.package-charts, 'true') && github.event.pull_request.merged == 'true' }} || github.event_name == 'release'
     runs-on: self-hosted
     steps:
     - name: Pull chart repo
