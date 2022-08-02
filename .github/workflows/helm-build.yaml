@@ -84,7 +84,7 @@ jobs:
       - check-chart-versions
     if: |
       always() &&
-      contains(needs.check-chart-versions.outputs.package-charts, 'true') ||
+      contains(needs.check-chart-versions.outputs.package-charts, 'true') &&
       ${{ inputs.HELM_PUSH }}
     runs-on: self-hosted
     steps:
