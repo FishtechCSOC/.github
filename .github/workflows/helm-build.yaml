@@ -83,7 +83,6 @@ jobs:
       - check-chart-diffs
       - check-chart-versions
     if: |
-      always() &&
       contains(needs.check-chart-versions.outputs.package-charts, 'true') &&
       ${{ inputs.HELM_PUSH }}
     runs-on: self-hosted
