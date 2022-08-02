@@ -18,7 +18,10 @@ on:
     secrets:
       GCP_ARGO_SERVICE_ACCOUNT:
         required: true
-        
+
+env:
+  HELM_PUSH: ${{ inputs.HELM_PUSH }}
+
 jobs:
   check-chart-diffs:
     name: Check for Helm chart changes
@@ -28,6 +31,8 @@ jobs:
       name: Checkout current branch
       with:
         fetch-depth: 0
+    - name: Print env
+      run: env
     - name: Check for git diffs
       id: chart-changes
       run: |
@@ -83,13 +88,11 @@ jobs:
       - check-chart-diffs
       - check-chart-versions
     if: |
-      ${{ contains(needs.check-chart-versions.outputs.package-charts, 'true') && contains(inputs.HELM_PUSH, 'true') }}
+      ${{ contains(needs.check-chart-versions.outputs.package-charts, 'true') && contains(env.HELM_PUSH, 'true') }}
     runs-on: self-hosted
     steps:
     - name: Pull chart repo
       uses: actions/checkout@master
-    - name: Print env
-      run: env
     - name: Push Helm chart to Artifact Registry
       uses: FishtechCSOC/.github/.github/actions/helm-push@main
       with:
