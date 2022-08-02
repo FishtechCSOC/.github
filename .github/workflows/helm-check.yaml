@@ -1,32 +1,19 @@
-name: Build and Package
+name: Helm Checks
 
 on:
   workflow_call:
-    inputs:
-      GCP_ARTIFACT_REGISTRY:
-        required: false
-        type: string
-        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
-      APP_VERSION:
-        required: false
-        type: string
-        default: "latest"
-    secrets:
-      GCP_ARGO_SERVICE_ACCOUNT:
-        required: true
-        
-env:
-  GCP_ARTIFACT_REGISTRY: 'oci://us-central1-docker.pkg.dev/cyderes-prod/cyderes-helm-repo'
 
 jobs:
   check-chart-diffs:
-    name: Check for Helm chart changes
+    name: Check for chart changes
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@master
       name: Checkout current branch
       with:
         fetch-depth: 0
+    - name: Print env
+      run: env
     - name: Check for git diffs
       id: chart-changes
       run: |
@@ -36,7 +23,7 @@ jobs:
           echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
           echo "::set-output name=CHART_VERSION::$(cat $(find charts | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')"
         else
-          echo "no diff, skipping package"
+          echo "no diff, skipping version compare"
           pwd
           ls -la
           git --no-pager diff charts
@@ -45,8 +32,8 @@ jobs:
       chart_changes: ${{ steps.chart-changes.outputs.CHART_CHANGES }}
       chart_name: ${{ steps.chart-changes.outputs.CHART_NAME }}
       chart_version: ${{ steps.chart-changes.outputs.CHART_VERSION }}
-  check-chart-versions:
-    name: Check Helm chart version
+  check-chart-version:
+    name: Check chart version
     needs:
       - check-chart-diffs
     if: |
@@ -74,29 +61,3 @@ jobs:
           echo "Chart semantic version in pull request must be greater than main branch!"
           exit 1
         fi
-    outputs:
-      package-charts: ${{ steps.chart-compare.outputs.PACKAGE_CHARTS }}
-  package-chart:
-    name: Package and push Helm chart
-    needs:
-      - check-chart-diffs
-      - check-chart-versions
-    if: |
-      always() &&
-      contains(needs.check-chart-versions.outputs.package-charts, 'true')
-    runs-on: self-hosted
-    steps:
-    - name: Pull chart repo
-      uses: actions/checkout@master
-    - name: Push Helm chart to Artifact Registry
-      uses: FishtechCSOC/.github/.github/actions/helm-push@main
-      with:
-        useOCIRegistry: true
-        username: '_json_key_base64'
-        password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        registry-url: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
-        force: true
-        chart-folder: charts/${{ needs.check-chart-diffs.outputs.chart_name }}
-        version: ${{ needs.check-chart-diffs.outputs.chart_version }}
-        appVersion: ${{ inputs.APP_VERSION }}

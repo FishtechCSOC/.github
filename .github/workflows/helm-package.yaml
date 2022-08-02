@@ -1,0 +1,56 @@
+name: Build and Package
+
+on:
+  workflow_call:
+    inputs:
+      GCP_ARTIFACT_REGISTRY:
+        required: false
+        type: string
+        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+      APP_VERSION:
+        required: false
+        type: string
+        default: "latest"
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT:
+        required: true
+
+jobs:
+  get-chart-properties:
+    name: Get chart properties
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@master
+      name: Checkout main
+      with:
+        ref: "main"
+    - name: Get Helm chart name/version
+      id: get-chart-properties
+      run: |
+        echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
+        echo "::set-output name=CHART_VERSION::$(cat $(find charts | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')"
+    - name: Print env
+      run: env
+    outputs:
+      chart_name: ${{ steps.get-chart-properties.outputs.CHART_NAME }}
+      chart_version: ${{ steps.get-chart-properties.outputs.CHART_VERSION }}
+  package-chart:
+    name: Package and push Helm chart
+    needs:
+      - get-chart-properties
+    runs-on: self-hosted
+    steps:
+    - name: Pull chart repo
+      uses: actions/checkout@master
+    - name: Push Helm chart to Artifact Registry
+      uses: FishtechCSOC/.github/.github/actions/helm-push@main
+      with:
+        useOCIRegistry: true
+        username: '_json_key_base64'
+        password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+        access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+        registry-url: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+        force: true
+        chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
+        version: ${{ needs.get-chart-properties.outputs.chart_version }}
+        appVersion: ${{ inputs.APP_VERSION }}
