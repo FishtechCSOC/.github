@@ -113,4 +113,4 @@ jobs:
       - name: ArgoCD sync
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app sync ${{ needs.get-chart-properties.outputs.chart_name }}
+          command: app sync ${{ needs.get-chart-properties.outputs.chart_name }} --prune
