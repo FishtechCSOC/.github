@@ -11,13 +11,14 @@ on:
         required: false
         type: string
         default: "latest"
+      HELM_PUSH:
+        required: false
+        type: boolean
+        default: false
     secrets:
       GCP_ARGO_SERVICE_ACCOUNT:
         required: true
         
-env:
-  GCP_ARTIFACT_REGISTRY: 'oci://us-central1-docker.pkg.dev/cyderes-prod/cyderes-helm-repo'
-
 jobs:
   check-chart-diffs:
     name: Check for Helm chart changes
@@ -83,7 +84,8 @@ jobs:
       - check-chart-versions
     if: |
       always() &&
-      contains(needs.check-chart-versions.outputs.package-charts, 'true')
+      contains(needs.check-chart-versions.outputs.package-charts, 'true') ||
+      ${{ inputs.HELM_PUSH }}
     runs-on: self-hosted
     steps:
     - name: Pull chart repo
