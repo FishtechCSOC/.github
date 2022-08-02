@@ -84,7 +84,7 @@ jobs:
       - check-chart-versions
     if: |
       contains(needs.check-chart-versions.outputs.package-charts, 'true') &&
-      ${{ inputs.HELM_PUSH }}
+      contains(${{ inputs.HELM_PUSH }}, 'true')
     runs-on: self-hosted
     steps:
     - name: Pull chart repo
