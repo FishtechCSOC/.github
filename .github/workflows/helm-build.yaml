@@ -83,7 +83,8 @@ jobs:
       - check-chart-diffs
       - check-chart-versions
     if: |
-      (contains(needs.check-chart-versions.outputs.package-charts, 'true') || contains(github.event_name, 'release') ) && contains(inputs.HELM_PUSH, 'true')
+      (contains(needs.check-chart-versions.outputs.package-charts, 'true') && contains(github.event_name, 'push') && contains(github.ref_name, 'main')) || 
+      contains(github.event_name, 'release')
     runs-on: self-hosted
     steps:
     - name: Pull chart repo
