@@ -88,6 +88,8 @@ jobs:
     steps:
     - name: Pull chart repo
       uses: actions/checkout@master
+    - name: Print env
+      run: env
     - name: Push Helm chart to Artifact Registry
       uses: FishtechCSOC/.github/.github/actions/helm-push@main
       with:
