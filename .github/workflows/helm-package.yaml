@@ -17,7 +17,7 @@ on:
 
 jobs:
   get-chart-properties:
-    name: Get Helm chart version
+    name: Get chart properties
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@master
