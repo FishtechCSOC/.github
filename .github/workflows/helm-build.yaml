@@ -13,8 +13,8 @@ on:
         default: "latest"
       HELM_PUSH:
         required: false
-        type: boolean
-        default: false
+        type: string
+        default: 'false'
     secrets:
       GCP_ARGO_SERVICE_ACCOUNT:
         required: true
