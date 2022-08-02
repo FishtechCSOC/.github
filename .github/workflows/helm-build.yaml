@@ -19,9 +19,6 @@ on:
       GCP_ARGO_SERVICE_ACCOUNT:
         required: true
 
-env:
-  HELM_PUSH: ${{ inputs.HELM_PUSH }}
-
 jobs:
   check-chart-diffs:
     name: Check for Helm chart changes
