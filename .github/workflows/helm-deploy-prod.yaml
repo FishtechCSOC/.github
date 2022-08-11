@@ -114,3 +114,7 @@ jobs:
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app sync ${{ needs.get-chart-properties.outputs.chart_name }} --prune
+      - name: ArgoCD deployment restart
+        uses: clowdhaus/argo-cd-action@v1.9.0
+        with:
+          command: app actions run ${{ needs.get-chart-properties.outputs.chart_name }} restart --group apps --kind Deployment
