@@ -49,7 +49,9 @@ jobs:
     steps:
       - name: checkout git
         uses: actions/checkout@v3
-
+      - name: printenv
+        run: env
+        
       - name: Read .nvmrc
         id: node_version
         run: echo ::set-output name=NODE_VERSION::$(cat ${{ inputs.PATH }}/.nvmrc)
