@@ -9,12 +9,6 @@ on:
         type: string
         default: 'latest'
 
-      # appVersion used to package the image. Defaults to 'latest' for dev, GitHub release tag for Prod
-      APP_VERSION:
-        required: false
-        type: string
-        default: 'latest'
-
       # Path to Dockerfile (e.g. path/to/Dockerfile)
       DOCKERFILE_PATH:
         required: false
@@ -79,4 +73,3 @@ jobs:
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} --no-push
           cache: true
           cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
-          # skip_unchanged_digest: true
