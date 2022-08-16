@@ -16,13 +16,13 @@ on:
         default: 'latest'
 
       # Path to Dockerfile (e.g. path/to/Dockerfile)
-      BUILD_FILE:
+      DOCKERFILE_PATH:
         required: false
         type: string
         default: 'Dockerfile'
 
       # Path to Docker context
-      PATH:
+      CONTEXT_PATH:
         required: false
         type: string
         default: '.'
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v3
       - name: printenv
         run: env
-        
+
       - name: Read .nvmrc
         id: node_version
         run: echo ::set-output name=NODE_VERSION::$(cat ${{ inputs.PATH }}/.nvmrc)
@@ -63,7 +63,7 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
 
       - name: npm install
-        run: cd ${{ inputs.PATH }}; npm ci
+        run: cd ${{ inputs.CONTEXT_PATH }}; npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
 
@@ -73,8 +73,8 @@ jobs:
           image: ${{ inputs.IMAGE }}
           username: "_json_key_base64"
           password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-          path: ${{ inputs.PATH }}
-          build_file: ${{ inputs.BUILD_FILE }}
+          path: ${{ inputs.CONTEXT_PATH }}
+          build_file: ${{ inputs.DOCKERFILE_PATH }}
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }}
           cache: true
           cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
