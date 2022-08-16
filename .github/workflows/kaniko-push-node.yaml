@@ -27,12 +27,6 @@ on:
         type: string
         default: '.'
 
-      # Path to .nvmrc
-      PATH_TO_NVMRC:
-        required: false
-        type: string
-        default: '.'
-
       # GCP Artifact Repository URL for container images
       GCP_ARTIFACT_REGISTRY:
         required: false
@@ -59,7 +53,7 @@ jobs:
         run: env
       - name: Read .nvmrc
         id: node_version
-        run: echo ::set-output name=NODE_VERSION::$(cat ${PATH_TO_NVMRC}/.nvmrc)
+        run: echo ::set-output name=NODE_VERSION::$(cat ${{ inputs.PATH }}/.nvmrc)
 
       - name: setup node
         uses: actions/setup-node@v3.1.1
