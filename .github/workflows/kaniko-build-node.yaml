@@ -71,8 +71,12 @@ jobs:
         uses: aevea/action-kaniko@v0.9.0
         with:
           image: ${{ inputs.IMAGE }}
+          registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
           username: "_json_key_base64"
           password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }}
+          cache: true
+          cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
+          skip_unchanged_digest: true

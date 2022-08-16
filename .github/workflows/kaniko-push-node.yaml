@@ -71,6 +71,7 @@ jobs:
         uses: aevea/action-kaniko@v0.9.0
         with:
           image: ${{ inputs.IMAGE }}
+          registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
           username: "_json_key_base64"
           password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           path: ${{ inputs.CONTEXT_PATH }}
@@ -79,4 +80,3 @@ jobs:
           cache: true
           cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
           tag_with_latest: true
-          registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
