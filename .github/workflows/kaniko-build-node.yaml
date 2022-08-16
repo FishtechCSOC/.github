@@ -76,7 +76,7 @@ jobs:
           password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
-          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }}
+          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} --tar-path=/dev/null
           cache: true
           cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
           skip_unchanged_digest: true
