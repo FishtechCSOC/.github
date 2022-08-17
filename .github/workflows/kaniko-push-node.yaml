@@ -1,0 +1,83 @@
+name: Kaniko Build/Push
+
+on:
+  workflow_call:
+    inputs:
+      # Image name to be built (e.g. my-app-name/container-image-name)
+      IMAGE:
+        required: true
+        type: string
+        default: 'latest'
+
+      # appVersion used to package the image. Defaults to 'latest' for dev, GitHub release tag for Prod
+      APP_VERSION_TAG:
+        required: false
+        type: string
+        default: 'latest'
+
+      # Path to Dockerfile (e.g. path/to/Dockerfile)
+      DOCKERFILE_PATH:
+        required: false
+        type: string
+        default: 'Dockerfile'
+
+      # Path to Docker context
+      CONTEXT_PATH:
+        required: false
+        type: string
+        default: '.'
+
+      # GCP Artifact Repository URL for container images
+      GCP_ARTIFACT_REGISTRY:
+        required: false
+        type: string
+        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-container-repo'
+
+      # Credentials to use for GCP Artifact Registry. Should be secrets available to calling workflow project.
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT:
+        required: true
+
+      # GitHub service account token used for GitHub NPM registry
+      CI_GITHUB_TOKEN:
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: self-hosted
+    name: Build/Push
+    steps:
+      - name: checkout git
+        uses: actions/checkout@v3
+      - name: printenv
+        run: env
+
+      - name: Read .nvmrc
+        id: node_version
+        run: echo ::set-output name=NODE_VERSION::$(cat ${{ inputs.CONTEXT_PATH }}/.nvmrc)
+
+      - name: setup node
+        uses: actions/setup-node@v3.1.1
+        with:
+          node-version: ${{ steps.node_version.outputs.NODE_VERSION }}
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: npm install
+        run: cd ${{ inputs.CONTEXT_PATH }}; npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+
+      - name: Kaniko build and push
+        uses: aevea/action-kaniko@v0.9.0
+        with:
+          image: ${{ inputs.IMAGE }}
+          registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+          username: "_json_key_base64"
+          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          path: ${{ inputs.CONTEXT_PATH }}
+          build_file: ${{ inputs.DOCKERFILE_PATH }}
+          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }}
+          cache: true
+          cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
+          tag: ${{ inputs.APP_VERSION_TAG }}
+          tag_with_latest: true
