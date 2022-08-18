@@ -1,0 +1,72 @@
+name: GoReleaser Build
+
+on:
+  workflow_call:
+    inputs:
+
+      # GCP Artifact Repository URL for container images
+      GCP_ARTIFACT_REPO:
+        required: false
+        type: string
+        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-container-repo'
+
+      # Artifact Registry repositories to push to
+      ARTIFACT_REGISTRY:
+        required: false
+        type: string
+        default: us-central1-docker.pkg.dev
+
+      # Artifact Registry repositories to push to
+      APP_VERSION:
+        required: false
+        type: string
+        default: latest
+
+      # Credentials to use for GCP Artifact Registry. Should be secrets available to calling workflow project.
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT:
+        required: true
+
+      # GitHub service account token used for GitHub NPM registry
+      CI_GITHUB_TOKEN:
+        required: true
+
+jobs:
+  build:
+    runs-on: self-hosted
+    name: Build/Push
+    steps:
+      - name: checkout git
+        uses: actions/checkout@v3
+
+      - uses: 'docker/login-action@v1'
+        with:
+          registry: ${{ inputs.ARTIFACT_REGISTRY }}
+          username: _json_key_base64
+          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.13.1'
+
+      - name: Get Go version
+        id: go_version
+        run: echo ::set-output name=GO_VERSION::$(go version | awk '{print $3}')
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --snapshot --rm-dist --skip-sign --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+          GOVERSION: ${{ steps.go_version.outputs.GO_VERSION }}
+          REGISTRY: ${{ env.ARTIFACT_REGISTRY }}
+
+      - name: Docker push
+        if: github.event_name == 'push'
+        run: |
+          PROJECT_NAME=$(cat .goreleaser.yml | grep project_name | awk '{print $2}')
+          IMAGE=$(docker image ls | grep $PROJECT_NAME | grep ${{ inputs.APP_VERSION }} | awk '{print $1}')
+          docker push ${IMAGE}:${{ inputs.APP_VERSION }}
