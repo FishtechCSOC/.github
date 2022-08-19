@@ -27,10 +27,6 @@ on:
         type: string
         default: cyderes-helm-repo
 
-    secrets:
-      GCP_ARGO_SERVICE_ACCOUNT:
-        required: true
-
 jobs:
 
   set-env:
@@ -65,9 +61,6 @@ jobs:
       run: |
         echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
         echo "::set-output name=CHART_VERSION::$(cat $(find charts | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')"
-
-    - name: Print env
-      run: env
 
     outputs:
       chart_name: ${{ steps.get-chart-properties.outputs.CHART_NAME }}
