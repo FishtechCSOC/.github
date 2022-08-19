@@ -65,7 +65,7 @@ jobs:
           REGISTRY: ${{ inputs.GCP_ARTIFACT_REPO }}
 
       - name: Docker push
-        if: ${{ github.event_name == 'push' || github.event_name == 'publish' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
         run: |
           PROJECT_NAME=$(cat .goreleaser.yml | grep project_name | awk '{print $2}')
           IMAGE=$(docker image ls | grep $PROJECT_NAME | grep ${{ inputs.APP_VERSION }} | awk '{print $1}')
