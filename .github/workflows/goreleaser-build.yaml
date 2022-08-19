@@ -9,19 +9,19 @@ on:
         required: false
         type: string
 
-      # Artifact Registry repositories to push to
+      # Artifact Registry host/region
       ARTIFACT_REGISTRY_HOST:
         required: false
         type: string
         default: us-central1-docker.pkg.dev
 
-      # Artifact Registry repositories to push to
+      # Artifact Registry repository
       ARTIFACT_REGISTRY_REPO:
         required: false
         type: string
         default: cyderes-container-repo
 
-      # Artifact Registry repositories to push to
+      # Version tag to use when pushing to Production repository
       APP_VERSION:
         required: false
         type: string
