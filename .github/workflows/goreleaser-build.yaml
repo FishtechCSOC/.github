@@ -85,6 +85,6 @@ jobs:
         run: |
           PROJECT_NAME=$(cat .goreleaser.yml | grep project_name | awk '{print $2}')
           SOURCE_IMAGE=$(docker image ls | grep $PROJECT_NAME | grep ${{ inputs.APP_VERSION }} | awk '{print $1}')
-          TARGET_IMAGE="${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${PROJECT_NAME}:${{ inputs.APP_VERSION }}""
+          TARGET_IMAGE="${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${PROJECT_NAME}:${{ inputs.APP_VERSION }}"
           docker image tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
           docker push ${TARGET_IMAGE}
