@@ -107,7 +107,7 @@ jobs:
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: >
-            --username ${{ secrets.ARGOCD_DEV_USERNAME }} \
+            --username ${{ secrets.ARGOCD_DEV_USERNAME }}
             --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
 
       - name: Create ArgoCD Application
