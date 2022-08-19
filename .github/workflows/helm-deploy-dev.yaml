@@ -119,7 +119,7 @@ jobs:
             --server ${{ inputs.ARGOCD_API_URL }}
             --dest-server ${{ inputs.ARGOCD_DEST_SERVER }}
             --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }}
-            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set_env.outputs.GCP_PROJECT}}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT}}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
             --revision ${{ needs.get-chart-properties.outputs.chart_version }}
             --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }}
             --values ${{ inputs.ARGOCD_VALUES_FILE }}
