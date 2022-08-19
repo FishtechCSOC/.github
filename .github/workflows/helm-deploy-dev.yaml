@@ -106,7 +106,7 @@ jobs:
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
-          options: |
+          options: >
             --username ${{ secrets.ARGOCD_DEV_USERNAME }} \
             --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
 
