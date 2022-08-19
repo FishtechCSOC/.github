@@ -48,11 +48,11 @@ jobs:
         id: set_env
         run: |
           if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
-            echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }})
+            echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
           elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
-            echo ::set-output name=GCP_PROJECT::cyderes-prod)
+            echo ::set-output name=GCP_PROJECT::cyderes-prod
           else
-            echo ::set-output name=GCP_PROJECT::cyderes-dev)
+            echo ::set-output name=GCP_PROJECT::cyderes-dev
           fi
 
       - uses: 'docker/login-action@v1'
