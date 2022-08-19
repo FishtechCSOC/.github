@@ -30,17 +30,28 @@ on:
         type: string
         default: 'values.yaml'
 
-      # appVersion used to package the chart. Defaults to 'latest' for dev, GitHub release tag for Prod
+      # # Version tag to use when pushing to Production repository. Defaults to 'latest' for dev, GitHub release tag for Prod
       APP_VERSION:
         required: false
         type: string
         default: 'latest'
 
-  # GCP Artifact Repository URL used by ArgoCD, which requires that the prefix be omitted
-      GCP_ARTIFACT_REGISTRY:
+      # GCP Project containing Artifact Registry repository
+      GCP_PROJECT:
         required: false
         type: string
-        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+
+      # Artifact Registry host/region
+      ARTIFACT_REGISTRY_HOST:
+        required: false
+        type: string
+        default: us-central1-docker.pkg.dev
+
+      # Artifact Registry repository
+      ARTIFACT_REGISTRY_REPO:
+        required: false
+        type: string
+        default: cyderes-helm-repo
 
   # Same thing, but without 'oci://'' prefix
       ARGOCD_REPO:
@@ -58,6 +69,24 @@ on:
         required: true
 
 jobs:
+
+  set-env:
+    name: Set environment
+    runs-on: self-hosted
+    steps:
+    - name: Set environment
+      id: set_env
+      run: |
+        if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
+          echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
+        elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
+          echo ::set-output name=GCP_PROJECT::cyderes-prod
+        else
+          echo ::set-output name=GCP_PROJECT::cyderes-dev
+        fi
+    outputs:
+      GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
+
   get-chart-properties:
     name: Get Helm chart properties
     runs-on: self-hosted
@@ -78,6 +107,7 @@ jobs:
     name: Create/update app in ArgoCD Dev
     needs:
       - get-chart-properties
+      - set-env
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@master
@@ -86,17 +116,33 @@ jobs:
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: |
-            --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }}
+            --username ${{ secrets.ARGOCD_USERNAME }} \
+            --password ${{ secrets.ARGOCD_PASSWORD }}
       - name: Create ArgoCD Application
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app create ${{ needs.get-chart-properties.outputs.chart_name }}
-          options: --project ${{ inputs.ARGOCD_PROJECT }} --server ${{ inputs.ARGOCD_API_URL }} --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} --repo ${{ inputs.ARGOCD_REPO }} --revision ${{ needs.get-chart-properties.outputs.chart_version }} --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} --values ${{ inputs.ARGOCD_VALUES_FILE }} --sync-option Prune=true --sync-option CreateNamespace=true --sync-option RespectIgnoreDifferences=true --upsert
+          options: |
+            --project ${{ inputs.ARGOCD_PROJECT }} \
+            --server ${{ inputs.ARGOCD_API_URL }} \
+            --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} \
+            --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} \
+            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set_env.outputs.GCP_PROJECT}}/${{ inputs.ARTIFACT_REGISTRY_REPO }} \
+            --revision ${{ needs.get-chart-properties.outputs.chart_version }} \
+            --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} \
+            --values ${{ inputs.ARGOCD_VALUES_FILE }} \
+            --sync-option Prune=true \
+            --sync-option CreateNamespace=true \
+            --sync-option RespectIgnoreDifferences=true \
+            --upsert
       - name: Patch ArgoCD Application for ESO
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app patch ${{ needs.get-chart-properties.outputs.chart_name }}
-          options: --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}' --type merge
+          options: |
+            --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}' \
+            --type merge
+            
   sync-app-dev:
     name: Sync application in ArgoCD Dev
     needs:
@@ -109,7 +155,8 @@ jobs:
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: |
-            --username ${{ secrets.ARGOCD_USERNAME }} --password ${{ secrets.ARGOCD_PASSWORD }}
+            --username ${{ secrets.ARGOCD_USERNAME }} \
+            --password ${{ secrets.ARGOCD_PASSWORD }}
       - name: ArgoCD sync
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
