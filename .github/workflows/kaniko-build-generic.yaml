@@ -7,7 +7,6 @@ on:
       IMAGE:
         required: true
         type: string
-        default: 'latest'
 
       # Path to Dockerfile (e.g. path/to/Dockerfile)
       DOCKERFILE_PATH:
@@ -38,15 +37,6 @@ on:
         type: string
         default: cyderes-helm-repo
 
-      # Credentials to use for GCP Artifact Registry. Should be secrets available to calling workflow project.
-    secrets:
-      GCP_ARGO_SERVICE_ACCOUNT:
-        required: true
-
-      # GitHub service account token used for GitHub NPM registry
-      CI_GITHUB_TOKEN:
-        required: true
-
 jobs:
 
   build:
@@ -69,8 +59,25 @@ jobs:
             echo ::set-output name=PUSH_FLAG::--no-push
           fi
 
-      - name: Kaniko build
+      - name: Kaniko build (Dev)
         uses: aevea/action-kaniko@v0.9.0
+        if: ${{ github.event_name != 'release' }}
+        with:
+          image: ${{ inputs.IMAGE }}
+          registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+          username: "_json_key_base64"
+          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          path: ${{ inputs.CONTEXT_PATH }}
+          build_file: ${{ inputs.DOCKERFILE_PATH }}
+          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
+          cache: true
+          cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
+          tag: ${{ inputs.APP_VERSION_TAG }}
+          tag_with_latest: true
+
+      - name: Kaniko build (Prod)
+        uses: aevea/action-kaniko@v0.9.0
+        if: ${{ github.event_name == 'release' }}
         with:
           image: ${{ inputs.IMAGE }}
           registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
