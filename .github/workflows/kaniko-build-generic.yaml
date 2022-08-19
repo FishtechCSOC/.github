@@ -46,7 +46,7 @@ on:
       # GitHub service account token used for GitHub NPM registry
       CI_GITHUB_TOKEN:
         required: true
-        
+
 jobs:
 
   build:
@@ -80,4 +80,4 @@ jobs:
           build_file: ${{ inputs.DOCKERFILE_PATH }}
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
           cache: true
-          cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
+          cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
