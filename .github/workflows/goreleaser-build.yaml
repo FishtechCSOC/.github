@@ -34,7 +34,7 @@ on:
 
       # GitHub service account token used for GitHub NPM registry
       CI_GITHUB_TOKEN:
-        required: false
+        required: true
 
 jobs:
   build:
