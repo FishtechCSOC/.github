@@ -53,21 +53,6 @@ on:
         type: string
         default: cyderes-helm-repo
 
-  # Same thing, but without 'oci://'' prefix
-      ARGOCD_REPO:
-        required: false
-        type: string
-        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
-
-    secrets:
-      # Credentials to use for ArgoCD instance. Should be secrets available to calling workflow project.
-      ARGOCD_USERNAME:
-        required: true
-      ARGOCD_PASSWORD:
-        required: true
-      GCP_ARGO_SERVICE_ACCOUNT:
-        required: true
-
 jobs:
 
   set-env:
@@ -84,6 +69,7 @@ jobs:
         else
           echo ::set-output name=GCP_PROJECT::cyderes-dev
         fi
+
     outputs:
       GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
 
@@ -121,8 +107,8 @@ jobs:
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: |
-            --username ${{ secrets.ARGOCD_USERNAME }} \
-            --password ${{ secrets.ARGOCD_PASSWORD }}
+            --username ${{ secrets.ARGOCD_DEV_USERNAME }} \
+            --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
 
       - name: Create ArgoCD Application
         uses: clowdhaus/argo-cd-action@v1.9.0
@@ -151,26 +137,34 @@ jobs:
             --type merge
 
   sync-app-dev:
-    name: Sync application in ArgoCD Dev
+    name: Sync application in ArgoCD
     needs:
       - get-chart-properties
       - create-app
     runs-on: self-hosted
     steps:
 
-      - name: ArgoCD login
+      - name: ArgoCD login (Dev)
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: |
-            --username ${{ secrets.ARGOCD_USERNAME }} \
-            --password ${{ secrets.ARGOCD_PASSWORD }}
+            --username ${{ secrets.ARGOCD_DEV_USERNAME }} \
+            --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
+
+      - name: ArgoCD login (Prod)
+        uses: clowdhaus/argo-cd-action@v1.9.0
+        with:
+          command: login ${{ inputs.ARGOCD_API_URL }}
+          options: |
+            --username ${{ secrets.ARGOCD_PROD_USERNAME }} \
+            --password ${{ secrets.ARGOCD_PROD_PASSWORD }}
 
       - name: ArgoCD sync
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app sync ${{ needs.get-chart-properties.outputs.chart_name }} --prune
-          
+
       - name: ArgoCD deployment restart
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
