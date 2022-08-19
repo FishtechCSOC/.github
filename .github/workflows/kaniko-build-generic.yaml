@@ -38,6 +38,15 @@ on:
         type: string
         default: cyderes-helm-repo
 
+      # Credentials to use for GCP Artifact Registry. Should be secrets available to calling workflow project.
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT:
+        required: true
+
+      # GitHub service account token used for GitHub NPM registry
+      CI_GITHUB_TOKEN:
+        required: true
+        
 jobs:
 
   build:
