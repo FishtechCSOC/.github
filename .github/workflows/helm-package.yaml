@@ -3,19 +3,54 @@ name: Build and Package
 on:
   workflow_call:
     inputs:
-      GCP_ARTIFACT_REGISTRY:
-        required: false
-        type: string
-        default: 'oci://us-central1-docker.pkg.dev/cyderes-dev/cyderes-helm-repo'
+    
+      # Version tag to use when pushing to Production repository. Defaults to 'latest' for dev, GitHub release tag for Prod
       APP_VERSION:
         required: false
         type: string
         default: "latest"
+
+      # GCP Project containing Artifact Registry repository
+      GCP_PROJECT:
+        required: false
+        type: string
+
+      # Artifact Registry host/region
+      ARTIFACT_REGISTRY_HOST:
+        required: false
+        type: string
+        default: us-central1-docker.pkg.dev
+
+      # Artifact Registry repository
+      ARTIFACT_REGISTRY_REPO:
+        required: false
+        type: string
+        default: cyderes-helm-repo
+
     secrets:
       GCP_ARGO_SERVICE_ACCOUNT:
         required: true
 
 jobs:
+
+  set-env:
+    name: Set environment
+    runs-on: self-hosted
+    steps:
+    - name: Set environment
+      id: set_env
+      run: |
+        if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
+          echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
+        elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
+          echo ::set-output name=GCP_PROJECT::cyderes-prod
+        else
+          echo ::set-output name=GCP_PROJECT::cyderes-dev
+        fi
+
+    outputs:
+      GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
+
   get-chart-properties:
     name: Get chart properties
     runs-on: self-hosted
@@ -24,32 +59,53 @@ jobs:
       name: Checkout main
       with:
         ref: "main"
+
     - name: Get Helm chart name/version
       id: get-chart-properties
       run: |
         echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
         echo "::set-output name=CHART_VERSION::$(cat $(find charts | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')"
+
     - name: Print env
       run: env
+
     outputs:
       chart_name: ${{ steps.get-chart-properties.outputs.CHART_NAME }}
       chart_version: ${{ steps.get-chart-properties.outputs.CHART_VERSION }}
+
   package-chart:
     name: Package and push Helm chart
     needs:
       - get-chart-properties
+      - set-env
     runs-on: self-hosted
     steps:
     - name: Pull chart repo
       uses: actions/checkout@master
-    - name: Push Helm chart to Artifact Registry
+
+    - name: Push Helm chart to Artifact Registry (Dev)
       uses: FishtechCSOC/.github/.github/actions/helm-push@main
+      if: ${{ github.event_name != 'release' }}
+      with:
+        useOCIRegistry: true
+        username: '_json_key_base64'
+        password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+        access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+        registry-url: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+        force: true
+        chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
+        version: ${{ needs.get-chart-properties.outputs.chart_version }}
+        appVersion: ${{ inputs.APP_VERSION }}
+
+    - name: Push Helm chart to Artifact Registry (Prod)
+      uses: FishtechCSOC/.github/.github/actions/helm-push@main
+      if: ${{ github.event_name == 'release' }}
       with:
         useOCIRegistry: true
         username: '_json_key_base64'
         password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
         access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        registry-url: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+        registry-url: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
         force: true
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
         version: ${{ needs.get-chart-properties.outputs.chart_version }}
