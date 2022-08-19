@@ -4,17 +4,22 @@ on:
   workflow_call:
     inputs:
 
-      # GCP Artifact Repository URL for container images
-      GCP_ARTIFACT_REGISTRY:
+      # GCP Project containing Artifact Registry repository
+      GCP_PROJECT:
         required: false
         type: string
-        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-container-repo'
 
       # Artifact Registry repositories to push to
       ARTIFACT_REGISTRY_HOST:
         required: false
         type: string
         default: us-central1-docker.pkg.dev
+
+      # Artifact Registry repositories to push to
+      ARTIFACT_REGISTRY_REPO:
+        required: false
+        type: string
+        default: cyderes-container-repo
 
       # Artifact Registry repositories to push to
       APP_VERSION:
@@ -38,6 +43,17 @@ jobs:
     steps:
       - name: checkout git
         uses: actions/checkout@v3
+
+      - name: Set environment
+        id: set_env
+        run: |
+          if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
+            echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }})
+          elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
+            echo ::set-output name=GCP_PROJECT::cyderes-prod)
+          else
+            echo ::set-output name=GCP_PROJECT::cyderes-dev)
+          fi
 
       - uses: 'docker/login-action@v1'
         with:
@@ -68,6 +84,7 @@ jobs:
         if: ${{ github.event_name == 'push' || github.event_name == 'release' }}
         run: |
           PROJECT_NAME=$(cat .goreleaser.yml | grep project_name | awk '{print $2}')
-          IMAGE=$(docker image ls | grep $PROJECT_NAME | grep ${{ inputs.APP_VERSION }} | awk '{print $1}')
-          docker image tag ${IMAGE} ${{ inputs.GCP_ARTIFACT_REPO}}/${PROJECT_NAME}:${{ inputs.APP_VERSION }}
-          docker push ${{ inputs.GCP_ARTIFACT_REPO}}/${PROJECT_NAME}:${{ inputs.APP_VERSION }}
+          SOURCE_IMAGE=$(docker image ls | grep $PROJECT_NAME | grep ${{ inputs.APP_VERSION }} | awk '{print $1}')
+          TARGET_IMAGE="${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${PROJECT_NAME}:${{ inputs.APP_VERSION }}""
+          docker image tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+          docker push ${TARGET_IMAGE}
