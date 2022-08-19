@@ -89,7 +89,9 @@ jobs:
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
         version: ${{ needs.get-chart-properties.outputs.chart_version }}
         appVersion: ${{ inputs.APP_VERSION }}
-
+    - name: debug
+      run: |
+        echo oci://${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
     - name: Push Helm chart to Artifact Registry (Prod)
       uses: FishtechCSOC/.github/.github/actions/helm-push@main
       if: ${{ github.event_name == 'release' }}
