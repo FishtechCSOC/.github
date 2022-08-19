@@ -114,26 +114,26 @@ jobs:
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app create ${{ needs.get-chart-properties.outputs.chart_name }}
-          options: |
-            --project ${{ inputs.ARGOCD_PROJECT }} \
-            --server ${{ inputs.ARGOCD_API_URL }} \
-            --dest-server ${{ inputs.ARGOCD_DEST_SERVER }} \
-            --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }} \
-            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set_env.outputs.GCP_PROJECT}}/${{ inputs.ARTIFACT_REGISTRY_REPO }} \
-            --revision ${{ needs.get-chart-properties.outputs.chart_version }} \
-            --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }} \
-            --values ${{ inputs.ARGOCD_VALUES_FILE }} \
-            --sync-option Prune=true \
-            --sync-option CreateNamespace=true \
-            --sync-option RespectIgnoreDifferences=true \
+          options: >
+            --project ${{ inputs.ARGOCD_PROJECT }}
+            --server ${{ inputs.ARGOCD_API_URL }}
+            --dest-server ${{ inputs.ARGOCD_DEST_SERVER }}
+            --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }}
+            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set_env.outputs.GCP_PROJECT}}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+            --revision ${{ needs.get-chart-properties.outputs.chart_version }}
+            --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }}
+            --values ${{ inputs.ARGOCD_VALUES_FILE }}
+            --sync-option Prune=true
+            --sync-option CreateNamespace=true
+            --sync-option RespectIgnoreDifferences=true
             --upsert
 
       - name: Patch ArgoCD Application for ESO
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app patch ${{ needs.get-chart-properties.outputs.chart_name }}
-          options: |
-            --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}' \
+          options: >
+            --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}'
             --type merge
 
   sync-app-dev:
@@ -148,16 +148,16 @@ jobs:
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
-          options: |
-            --username ${{ secrets.ARGOCD_DEV_USERNAME }} \
+          options: >
+            --username ${{ secrets.ARGOCD_DEV_USERNAME }}
             --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
 
       - name: ArgoCD login (Prod)
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
-          options: |
-            --username ${{ secrets.ARGOCD_PROD_USERNAME }} \
+          options: >
+            --username ${{ secrets.ARGOCD_PROD_USERNAME }}
             --password ${{ secrets.ARGOCD_PROD_PASSWORD }}
 
       - name: ArgoCD sync
