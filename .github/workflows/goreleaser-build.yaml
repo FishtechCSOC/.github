@@ -5,13 +5,13 @@ on:
     inputs:
 
       # GCP Artifact Repository URL for container images
-      GCP_ARTIFACT_REPO:
+      GCP_ARTIFACT_REGISTRY:
         required: false
         type: string
         default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-container-repo'
 
       # Artifact Registry repositories to push to
-      ARTIFACT_REGISTRY:
+      ARTIFACT_REGISTRY_HOST:
         required: false
         type: string
         default: us-central1-docker.pkg.dev
@@ -41,7 +41,7 @@ jobs:
 
       - uses: 'docker/login-action@v1'
         with:
-          registry: ${{ inputs.ARTIFACT_REGISTRY }}
+          registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}
           username: _json_key_base64
           password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
 
