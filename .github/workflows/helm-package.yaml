@@ -3,7 +3,7 @@ name: Build and Package
 on:
   workflow_call:
     inputs:
-    
+
       # Version tag to use when pushing to Production repository. Defaults to 'latest' for dev, GitHub release tag for Prod
       APP_VERSION:
         required: false
@@ -91,7 +91,7 @@ jobs:
         username: '_json_key_base64'
         password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
         access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-        registry-url: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+        registry-url: oci://${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
         force: true
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
         version: ${{ needs.get-chart-properties.outputs.chart_version }}
@@ -105,7 +105,7 @@ jobs:
         username: '_json_key_base64'
         password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
         access-token: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        registry-url: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+        registry-url: oci://${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
         force: true
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
         version: ${{ needs.get-chart-properties.outputs.chart_version }}
