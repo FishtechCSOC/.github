@@ -54,6 +54,9 @@ jobs:
           elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-prod
             echo ::set-output name=PUSH_FLAG::
+          elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
+            echo ::set-output name=GCP_PROJECT::cyderes-dev
+            echo ::set-output name=PUSH_FLAG::
           else
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::--no-push
