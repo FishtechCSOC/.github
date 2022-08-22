@@ -93,8 +93,8 @@ jobs:
       chart_name: ${{ steps.get-chart-properties.outputs.CHART_NAME }}
       chart_version: ${{ steps.get-chart-properties.outputs.CHART_VERSION }}
 
-  create-app:
-    name: Create/update app in ArgoCD Dev
+  deploy-argo-app:
+    name: Create/update app in ArgoCD
     needs:
       - get-chart-properties
       - set-env
@@ -102,13 +102,23 @@ jobs:
     steps:
 
       - uses: actions/checkout@master
-      - name: ArgoCD login
+      - name: ArgoCD login (Dev)
         uses: clowdhaus/argo-cd-action@v1.9.0
+        if: ${{ github.event_name != 'release' }}
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: >
             --username ${{ secrets.ARGOCD_DEV_USERNAME }}
             --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
+
+      - name: ArgoCD login (Prod)
+        uses: clowdhaus/argo-cd-action@v1.9.0
+        if: ${{ github.event_name == 'release' }}
+        with:
+          command: login ${{ inputs.ARGOCD_API_URL }}
+          options: >
+            --username ${{ secrets.ARGOCD_PROD_USERNAME }}
+            --password ${{ secrets.ARGOCD_PROD_PASSWORD }}
 
       - name: Create ArgoCD Application
         uses: clowdhaus/argo-cd-action@v1.9.0
@@ -135,32 +145,6 @@ jobs:
           options: >
             --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}'
             --type merge
-
-  sync-app-dev:
-    name: Sync application in ArgoCD
-    needs:
-      - get-chart-properties
-      - create-app
-    runs-on: self-hosted
-    steps:
-
-      - name: ArgoCD login (Dev)
-        uses: clowdhaus/argo-cd-action@v1.9.0
-        if: ${{ github.event_name != 'release' }}
-        with:
-          command: login ${{ inputs.ARGOCD_API_URL }}
-          options: >
-            --username ${{ secrets.ARGOCD_DEV_USERNAME }}
-            --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
-
-      - name: ArgoCD login (Prod)
-        uses: clowdhaus/argo-cd-action@v1.9.0
-        if: ${{ github.event_name == 'release' }}
-        with:
-          command: login ${{ inputs.ARGOCD_API_URL }}
-          options: >
-            --username ${{ secrets.ARGOCD_PROD_USERNAME }}
-            --password ${{ secrets.ARGOCD_PROD_PASSWORD }}
 
       - name: ArgoCD sync
         uses: clowdhaus/argo-cd-action@v1.9.0
