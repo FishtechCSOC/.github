@@ -1,4 +1,4 @@
-name: Deploy to Development
+name: Deploy
 
 on:
   workflow_call:
@@ -62,16 +62,40 @@ jobs:
     - name: Set environment
       id: set_env
       run: |
+        echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+        echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+        echo ::add-mask::${{ secrets.ARGOCD_DEV_USERNAME }}
+        echo ::add-mask::${{ secrets.ARGOCD_DEV_PASSWORD}}
+        echo ::add-mask::${{ secrets.ARGOCD_PROD_USERNAME }}
+        echo ::add-mask::${{ secrets.ARGOCD_PROD_PASSWORD }}
         if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
           echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
+          echo ::set-output name=PUSH_FLAG::--no-push
         elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
           echo ::set-output name=GCP_PROJECT::cyderes-prod
+          echo ::set-output name=PUSH_FLAG::
+          echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
+          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          echo ::set-output name=ARGOCD_USERNAME::${{ secrets.ARGOCD_PROD_USERNAME }}
+          echo ::set-output name=ARGOCD_PASSWORD::${{ secrets.ARGOCD_PROD_PASSWORD }}
+        elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
+          echo ::set-output name=GCP_PROJECT::cyderes-dev
+          echo ::set-output name=PUSH_FLAG::
+          echo ::set-output name=APP_VERSION_TAG::latest
+          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          echo ::set-output name=ARGOCD_USERNAME::${{ secrets.ARGOCD_DEV_USERNAME }}
+          echo ::set-output name=ARGOCD_PASSWORD::${{ secrets.ARGOCD_DEV_PASSWORD }}
         else
           echo ::set-output name=GCP_PROJECT::cyderes-dev
+          echo ::set-output name=PUSH_FLAG::--no-push
+          echo ::set-output name=APP_VERSION_TAG::latest
+          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
         fi
 
     outputs:
       GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
+      ARGOCD_USERNAME: ${{ steps.set_env.outputs.ARGOCD_USERNAME }}
+      ARGOCD_PASSWORD: ${{ steps.set_env.outputs.ARGOCD_PASSWORD }}
 
   get-chart-properties:
     name: Get Helm chart properties
@@ -102,23 +126,13 @@ jobs:
     steps:
 
       - uses: actions/checkout@master
-      - name: ArgoCD login (Dev)
+      - name: ArgoCD login
         uses: clowdhaus/argo-cd-action@v1.9.0
-        if: ${{ github.event_name != 'release' }}
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: >
-            --username ${{ secrets.ARGOCD_DEV_USERNAME }}
-            --password ${{ secrets.ARGOCD_DEV_PASSWORD }}
-
-      - name: ArgoCD login (Prod)
-        uses: clowdhaus/argo-cd-action@v1.9.0
-        if: ${{ github.event_name == 'release' }}
-        with:
-          command: login ${{ inputs.ARGOCD_API_URL }}
-          options: >
-            --username ${{ secrets.ARGOCD_PROD_USERNAME }}
-            --password ${{ secrets.ARGOCD_PROD_PASSWORD }}
+            --username ${{ needs.set-env.outputs.ARGOCD_USERNAME }}
+            --password ${{ needs.set-env.outputs.ARGOCD_PASSWORD }}
 
       - name: Create ArgoCD Application
         uses: clowdhaus/argo-cd-action@v1.9.0
@@ -129,7 +143,7 @@ jobs:
             --server ${{ inputs.ARGOCD_API_URL }}
             --dest-server ${{ inputs.ARGOCD_DEST_SERVER }}
             --dest-namespace ${{ inputs.ARGOCD_DEST_NAMESPACE }}
-            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT}}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+            --repo ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
             --revision ${{ needs.get-chart-properties.outputs.chart_version }}
             --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }}
             --values ${{ inputs.ARGOCD_VALUES_FILE }}
