@@ -35,7 +35,7 @@ on:
       ARTIFACT_REGISTRY_REPO:
         required: false
         type: string
-        default: cyderes-helm-repo
+        default: cyderes-container-repo
 
 jobs:
 
