@@ -146,6 +146,11 @@ jobs:
             --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}'
             --type merge
 
+      - name: Refresh ArgoCD Application
+        uses: clowdhaus/argo-cd-action@v1.9.0
+        with:
+          command: app get ${{ needs.get-chart-properties.outputs.chart_name }} --hard-refresh
+
       - name: ArgoCD sync
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
