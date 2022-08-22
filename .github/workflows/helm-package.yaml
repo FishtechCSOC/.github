@@ -104,4 +104,4 @@ jobs:
         force: true
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
         version: ${{ needs.get-chart-properties.outputs.chart_version }}
-        appVersion: ${{ inputs.APP_VERSION }}
+        appVersion: ${{ github.ref_name }}
