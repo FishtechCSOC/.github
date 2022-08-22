@@ -48,15 +48,19 @@ jobs:
       - name: Set environment
         id: set_env
         run: |
+          echo "::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}"
+          echo "::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_PROD }}"
           if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
             echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
             echo ::set-output name=PUSH_FLAG::--no-push
           elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-prod
             echo ::set-output name=PUSH_FLAG::
+            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_PROD }}
           elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::
+            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
           else
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::--no-push
@@ -69,7 +73,7 @@ jobs:
           image: ${{ inputs.IMAGE }}
           registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
           username: "_json_key_base64"
-          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          password: ${{ steps.set_env.outputs.SERVICE_ACCOUNT_ENV }}
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
