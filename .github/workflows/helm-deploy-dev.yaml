@@ -146,6 +146,7 @@ jobs:
 
       - name: ArgoCD login (Dev)
         uses: clowdhaus/argo-cd-action@v1.9.0
+        if: ${{ github.event_name != 'release' }}
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: >
@@ -154,6 +155,7 @@ jobs:
 
       - name: ArgoCD login (Prod)
         uses: clowdhaus/argo-cd-action@v1.9.0
+        if: ${{ github.event_name == 'release' }}
         with:
           command: login ${{ inputs.ARGOCD_API_URL }}
           options: >
