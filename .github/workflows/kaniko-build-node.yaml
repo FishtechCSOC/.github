@@ -74,7 +74,7 @@ jobs:
         id: node_version
         run: echo ::set-output name=NODE_VERSION::$(cat ${{ inputs.CONTEXT_PATH }}/.nvmrc)
 
-      - name: setup node
+      - name: Set up node
         uses: actions/setup-node@v3.1.1
         with:
           node-version: ${{ steps.node_version.outputs.NODE_VERSION }}
@@ -85,11 +85,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
 
-      - name: test
+      - name: npm test
         if: ${{ github.event_name == 'pull_request' }}
         run: npm test
 
-      - name: lint
+      - name: npm lint
         if: ${{ github.event_name == 'pull_request' }}
         run: npm run lint
 
