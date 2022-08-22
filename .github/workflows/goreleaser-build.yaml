@@ -38,29 +38,35 @@ jobs:
       - name: Set environment
         id: set_env
         run: |
+          echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
             echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
+            echo ::set-output name=PUSH_FLAG::--no-push
           elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-prod
+            echo ::set-output name=PUSH_FLAG::
+            echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
+            echo ::set-output name=GCP_PROJECT::cyderes-dev
+            echo ::set-output name=PUSH_FLAG::
+            echo ::set-output name=APP_VERSION_TAG::latest
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
           else
             echo ::set-output name=GCP_PROJECT::cyderes-dev
+            echo ::set-output name=PUSH_FLAG::--no-push
+            echo ::set-output name=APP_VERSION_TAG::latest
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
           fi
 
-      - name: Docker login (Dev)
+      - name: Docker login
         uses: 'docker/login-action@v1'
         if: ${{ github.event_name != 'release' }}
         with:
           registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}
           username: _json_key_base64
-          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-
-      - name: Docker login (Prod)
-        uses: 'docker/login-action@v1'
-        if: ${{ github.event_name == 'release' }}
-        with:
-          registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}
-          username: _json_key_base64
-          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          password: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
 
       - uses: actions/setup-go@v3
         with:
