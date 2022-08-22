@@ -56,45 +56,31 @@ jobs:
           elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-prod
             echo ::set-output name=PUSH_FLAG::
-            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+            echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::
-            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+            echo ::set-output name=APP_VERSION_TAG::latest
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
           else
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::--no-push
-            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+            echo ::set-output name=APP_VERSION_TAG::latest
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
           fi
 
-      - name: Kaniko build (Dev)
+      - name: Kaniko build
         uses: aevea/action-kaniko@v0.9.0
-        if: ${{ github.event_name != 'release' }}
         with:
           image: ${{ inputs.IMAGE }}
           registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
           username: "_json_key_base64"
-          password: ${{ steps.set_env.outputs.SERVICE_ACCOUNT_ENV }}
+          password: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
           cache: true
           cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
-          tag: ${{ inputs.APP_VERSION_TAG }}
-          tag_with_latest: true
-
-      - name: Kaniko build (Prod)
-        uses: aevea/action-kaniko@v0.9.0
-        if: ${{ github.event_name == 'release' }}
-        with:
-          image: ${{ inputs.IMAGE }}
-          registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
-          username: "_json_key_base64"
-          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-          path: ${{ inputs.CONTEXT_PATH }}
-          build_file: ${{ inputs.DOCKERFILE_PATH }}
-          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
-          cache: true
-          cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
-          tag: ${{ inputs.APP_VERSION_TAG }}
+          tag: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
           tag_with_latest: true

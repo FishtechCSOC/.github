@@ -21,31 +21,55 @@ on:
         type: string
         default: '.'
 
-      # GCP Artifact Repository URL for container images
-      GCP_ARTIFACT_REGISTRY:
+      # GCP Project containing Artifact Registry repository
+      GCP_PROJECT:
         required: false
         type: string
-        default: 'us-central1-docker.pkg.dev/cyderes-dev/cyderes-container-repo'
 
-      # Credentials to use for GCP Artifact Registry. Should be secrets available to calling workflow project.
-    secrets:
-      GCP_ARGO_SERVICE_ACCOUNT:
-        required: true
+      # Artifact Registry host/region
+      ARTIFACT_REGISTRY_HOST:
+        required: false
+        type: string
+        default: us-central1-docker.pkg.dev
 
-      # GitHub service account token used for GitHub NPM registry
-      CI_GITHUB_TOKEN:
-        required: true
+      # Artifact Registry repository
+      ARTIFACT_REGISTRY_REPO:
+        required: false
+        type: string
+        default: cyderes-container-repo
 
 jobs:
+
   build:
     runs-on: self-hosted
     name: Build
     steps:
       - name: checkout git
         uses: actions/checkout@v3
-      - name: printenv
-        run: env
-
+      - name: Set environment
+        id: set_env
+        run: |
+          echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
+            echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
+            echo ::set-output name=PUSH_FLAG::--no-push
+          elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
+            echo ::set-output name=GCP_PROJECT::cyderes-prod
+            echo ::set-output name=PUSH_FLAG::
+            echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
+            echo ::set-output name=GCP_PROJECT::cyderes-dev
+            echo ::set-output name=PUSH_FLAG::
+            echo ::set-output name=APP_VERSION_TAG::latest
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          else
+            echo ::set-output name=GCP_PROJECT::cyderes-dev
+            echo ::set-output name=PUSH_FLAG::--no-push
+            echo ::set-output name=APP_VERSION_TAG::latest
+            echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          fi
       - name: Read .nvmrc
         id: node_version
         run: echo ::set-output name=NODE_VERSION::$(cat ${{ inputs.CONTEXT_PATH }}/.nvmrc)
@@ -65,11 +89,13 @@ jobs:
         uses: aevea/action-kaniko@v0.9.0
         with:
           image: ${{ inputs.IMAGE }}
-          registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}
+          registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
           username: "_json_key_base64"
-          password: ${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
+          password: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
-          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} --no-push
+          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
           cache: true
-          cache_registry: ${{ inputs.GCP_ARTIFACT_REGISTRY }}/${{ inputs.IMAGE }}/cache
+          cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
+          tag: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
+          tag_with_latest: true
