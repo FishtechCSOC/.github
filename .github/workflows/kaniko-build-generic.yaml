@@ -48,15 +48,15 @@ jobs:
       - name: Set environment
         id: set_env
         run: |
-          echo "::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}"
-          echo "::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_PROD }}"
+          echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
+          echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
             echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
             echo ::set-output name=PUSH_FLAG::--no-push
           elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-prod
             echo ::set-output name=PUSH_FLAG::
-            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_PROD }}
+            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
           elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::
@@ -64,6 +64,7 @@ jobs:
           else
             echo ::set-output name=GCP_PROJECT::cyderes-dev
             echo ::set-output name=PUSH_FLAG::--no-push
+            echo ::set-output name=SERVICE_ACCOUNT_ENV::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
           fi
 
       - name: Kaniko build (Dev)
