@@ -57,8 +57,9 @@ jobs:
 
     outputs:
       GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
-      GCP_ARGO_SERVICE_ACCOUNT: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
+      GCP_ARGO_SERVICE_ACCOUNT: some_value #${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
       APP_VERSION_TAG: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
+      MY_TEST_SECRET: another_value
 
   get-chart-properties:
     name: Get chart properties
