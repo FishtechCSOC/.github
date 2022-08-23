@@ -27,6 +27,12 @@ on:
         type: string
         default: cyderes-helm-repo
 
+    secrets:
+      GCP_ARGO_SERVICE_ACCOUNT:
+        required: false
+      GCP_ARGO_SERVICE_ACCOUNT_DEV:
+        required: false
+
 jobs:
 
   set-env:
@@ -36,8 +42,6 @@ jobs:
     - name: Set environment
       id: set_env
       run: |
-        echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-        echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
         if [[ "${{ github.event_name }}" =~ (^release$) ]]; then
           echo ::set-output name=GCP_PROJECT::cyderes-prod
           echo ::set-output name=PUSH_FLAG::
