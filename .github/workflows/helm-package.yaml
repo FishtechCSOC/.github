@@ -96,7 +96,7 @@ jobs:
         useOCIRegistry: true
         username: '_json_key_base64'
         password: ${{ needs.set-env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
-        access-token: ${{ needs.set-env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
+        access-token: ${{ needs.set-env.outputs.MY_TEST_SECRET }}
         registry-url: oci://${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
         force: true
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
