@@ -38,10 +38,7 @@ jobs:
       run: |
         echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
         echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
-          echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
-          echo ::set-output name=PUSH_FLAG::--no-push
-        elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
+        if [[ "${{ github.event_name }}" =~ (^release$) ]]; then
           echo ::set-output name=GCP_PROJECT::cyderes-prod
           echo ::set-output name=PUSH_FLAG::
           echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
