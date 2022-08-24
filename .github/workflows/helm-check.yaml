@@ -4,16 +4,17 @@ on:
   workflow_call:
 
 jobs:
+
   check-chart-diffs:
     name: Check for chart changes
     runs-on: self-hosted
     steps:
+
     - uses: actions/checkout@master
       name: Checkout current branch
       with:
         fetch-depth: 0
-    - name: Print env
-      run: env
+
     - name: Check for git diffs
       id: chart-changes
       run: |
@@ -28,10 +29,12 @@ jobs:
           ls -la
           git --no-pager diff charts
         fi
+
     outputs:
       chart_changes: ${{ steps.chart-changes.outputs.CHART_CHANGES }}
       chart_name: ${{ steps.chart-changes.outputs.CHART_NAME }}
       chart_version: ${{ steps.chart-changes.outputs.CHART_VERSION }}
+
   check-chart-version:
     name: Check chart version
     needs:
@@ -41,12 +44,20 @@ jobs:
       contains(needs.check-chart-diffs.outputs.chart_changes, 'true')
     runs-on: self-hosted
     steps:
+
     - uses: actions/checkout@master
       name: Checkout main
       with:
         ref: "main"
+
     - name: Check main chart version
-      run: echo "PROD_CHART_VERSION=$(cat $(find charts/${{ needs.check-chart-diffs.outputs.chart_name }} | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')" >> $GITHUB_ENV
+      run: |
+        echo "PROD_CHART_VERSION=$(cat $(find charts/${{ needs.check-chart-diffs.outputs.chart_name }} | grep Chart.yaml) \
+        | grep -E '^version:' \
+        | awk '{print $2}' \
+        | tr -d '\n\r')" \
+        >> $GITHUB_ENV
+
     - name: Compare chart versions
       id: chart-compare
       run: |
