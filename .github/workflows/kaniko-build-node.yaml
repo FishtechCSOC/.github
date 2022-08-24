@@ -87,11 +87,11 @@ jobs:
 
       - name: npm test
         if: ${{ github.event_name == 'pull_request' }}
-        run: npm test
+        run: cd ${{ inputs.CONTEXT_PATH }}; npm test
 
       - name: npm lint
         if: ${{ github.event_name == 'pull_request' }}
-        run: npm run lint
+        run: cd ${{ inputs.CONTEXT_PATH }}; npm run lint
 
       - name: Kaniko build
         uses: aevea/action-kaniko@v0.9.0
