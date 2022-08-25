@@ -27,43 +27,7 @@ on:
         type: string
         default: cyderes-helm-repo
 
-    secrets:
-      GCP_ARGO_SERVICE_ACCOUNT:
-        required: false
-      GCP_ARGO_SERVICE_ACCOUNT_DEV:
-        required: false
-
 jobs:
-
-  set-env:
-    name: Set environment
-    runs-on: self-hosted
-    steps:
-    - name: Set environment
-      id: set_env
-      run: |
-        if [[ "${{ github.event_name }}" =~ (^release$) ]]; then
-          echo ::set-output name=GCP_PROJECT::cyderes-prod
-          echo ::set-output name=PUSH_FLAG::
-          echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
-          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
-          echo ::set-output name=GCP_PROJECT::cyderes-dev
-          echo ::set-output name=PUSH_FLAG::
-          echo ::set-output name=APP_VERSION_TAG::latest
-          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-        else
-          echo ::set-output name=GCP_PROJECT::cyderes-dev
-          echo ::set-output name=PUSH_FLAG::--no-push
-          echo ::set-output name=APP_VERSION_TAG::latest
-          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-        fi
-
-    outputs:
-      GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
-      GCP_ARGO_SERVICE_ACCOUNT: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
-      APP_VERSION_TAG: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
-      MY_TEST_SECRET: another_value
 
   get-chart-properties:
     name: Get chart properties
@@ -88,7 +52,6 @@ jobs:
     name: Package and push Helm chart
     needs:
       - get-chart-properties
-      - set-env
     runs-on: self-hosted
     steps:
     - name: Set environment
@@ -120,8 +83,8 @@ jobs:
         username: '_json_key_base64'
         password: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
         access-token: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
-        registry-url: oci://${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ needs.set-env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+        registry-url: oci://${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
         force: true
         chart-folder: charts/${{ needs.get-chart-properties.outputs.chart_name }}
         version: ${{ needs.get-chart-properties.outputs.chart_version }}
-        appVersion: ${{ needs.set-env.outputs.APP_VERSION_TAG }}
+        appVersion: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
