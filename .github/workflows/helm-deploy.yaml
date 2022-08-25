@@ -85,7 +85,6 @@ jobs:
     name: Create/update app in ArgoCD
     needs:
       - get-chart-properties
-      - set-env
     runs-on: self-hosted
     steps:
       - name: Set environment
