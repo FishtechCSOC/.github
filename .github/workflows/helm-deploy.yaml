@@ -55,48 +55,6 @@ on:
 
 jobs:
 
-  set-env:
-    name: Set environment
-    runs-on: self-hosted
-    steps:
-    - name: Set environment
-      id: set_env
-      run: |
-        echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-        echo ::add-mask::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-        echo ::add-mask::${{ secrets.ARGOCD_DEV_USERNAME }}
-        echo ::add-mask::${{ secrets.ARGOCD_DEV_PASSWORD}}
-        echo ::add-mask::${{ secrets.ARGOCD_PROD_USERNAME }}
-        echo ::add-mask::${{ secrets.ARGOCD_PROD_PASSWORD }}
-        if [[ -n "${{ inputs.GCP_PROJECT }}" ]]; then
-          echo ::set-output name=GCP_PROJECT::${{ inputs.GCP_PROJECT }}
-          echo ::set-output name=PUSH_FLAG::--no-push
-        elif [[ "${{ github.event_name }}" =~ (^release$) ]]; then
-          echo ::set-output name=GCP_PROJECT::cyderes-prod
-          echo ::set-output name=PUSH_FLAG::
-          echo ::set-output name=APP_VERSION_TAG::${{ github.ref_name }}
-          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT }}
-          echo ::set-output name=ARGOCD_USERNAME::${{ secrets.ARGOCD_PROD_USERNAME }}
-          echo ::set-output name=ARGOCD_PASSWORD::${{ secrets.ARGOCD_PROD_PASSWORD }}
-        elif [[ "${{ github.event_name }}" =~ (^push$) ]]; then
-          echo ::set-output name=GCP_PROJECT::cyderes-dev
-          echo ::set-output name=PUSH_FLAG::
-          echo ::set-output name=APP_VERSION_TAG::latest
-          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-          echo ::set-output name=ARGOCD_USERNAME::${{ secrets.ARGOCD_DEV_USERNAME }}
-          echo ::set-output name=ARGOCD_PASSWORD::${{ secrets.ARGOCD_DEV_PASSWORD }}
-        else
-          echo ::set-output name=GCP_PROJECT::cyderes-dev
-          echo ::set-output name=PUSH_FLAG::--no-push
-          echo ::set-output name=APP_VERSION_TAG::latest
-          echo ::set-output name=GCP_ARGO_SERVICE_ACCOUNT::${{ secrets.GCP_ARGO_SERVICE_ACCOUNT_DEV }}
-        fi
-
-    outputs:
-      GCP_PROJECT: ${{ steps.set_env.outputs.GCP_PROJECT }}
-      ARGOCD_USERNAME: ${{ steps.set_env.outputs.ARGOCD_USERNAME }}
-      ARGOCD_PASSWORD: ${{ steps.set_env.outputs.ARGOCD_PASSWORD }}
-
   get-chart-properties:
     name: Get Helm chart properties
     runs-on: self-hosted
@@ -201,7 +159,7 @@ jobs:
         with:
           command: app sync ${{ needs.get-chart-properties.outputs.chart_name }} --prune
 
-      - name: ArgoCD deployment restart
+      - name: ArgoCD pod restart
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
           command: app actions run ${{ needs.get-chart-properties.outputs.chart_name }} restart --group apps --kind Deployment
