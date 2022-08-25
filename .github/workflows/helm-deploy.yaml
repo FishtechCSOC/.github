@@ -30,6 +30,12 @@ on:
         type: string
         default: 'values.yaml'
 
+      # Which kind of object owns pods to be restarted, either Deployment or StatefulSet
+      ARGOCD_POD_RESTART_KIND:
+        required: false
+        type: string
+        default: 'Deployment'
+
       # Version tag to use when pushing to Production repository. Defaults to 'latest' for dev, GitHub release tag for Prod
       APP_VERSION:
         required: false
@@ -162,4 +168,4 @@ jobs:
       - name: ArgoCD pod restart
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app actions run ${{ needs.get-chart-properties.outputs.chart_name }} restart --group apps --kind Deployment
+          command: app actions run ${{ needs.get-chart-properties.outputs.chart_name }} restart --group apps --kind ${{ inputs.ARGOCD_POD_RESTART_KIND }}
