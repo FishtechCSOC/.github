@@ -1,0 +1,1 @@
+global workflow tempalte that should be applied to all repos in the repository.
