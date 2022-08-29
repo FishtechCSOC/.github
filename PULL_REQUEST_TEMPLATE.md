@@ -18,7 +18,6 @@
 
 ## CheckList:
 - [ ] I have ensured my commit(s) adhere to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
-- [ ] I have filled out comments above.
 - [ ] I have performed a self-review of my code changes.
 - [ ] I have commented my code, particularly in hard-to-understand areas. (if applicable)
 - [ ] I have added relevant tests and/or examples for my code. (if applicable)
