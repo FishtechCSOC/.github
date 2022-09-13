@@ -39,9 +39,37 @@ on:
 
 jobs:
 
+  check-code-diffs:
+    name: Check for code changes
+    runs-on: self-hosted
+    steps:
+
+    - uses: actions/checkout@master
+      name: Checkout current branch
+      with:
+        fetch-depth: 0
+
+    - name: Check for code diffs
+      id: code-changes
+      run: |
+        if [[ -n "$(git --no-pager diff --name-only origin/${GITHUB_BASE_REF} -- apps | tr -d '\n\r')" ]]; then
+          echo "diff detected, proceeding with code build"
+          echo "::set-output name=CODE_CHANGES::true"
+        else
+          echo "no diff, skipping code build"
+        fi
+
+    outputs:
+      code_changes: ${{ steps.chart-changes.outputs.CODE_CHANGES }}
+
   build:
     runs-on: self-hosted
     name: Build
+    needs:
+      - check-code-diffs
+    if: |
+      always() &&
+      contains(needs.check-code-diffs.outputs.code_changes, 'true')
     steps:
       - name: checkout git
         uses: actions/checkout@v3
