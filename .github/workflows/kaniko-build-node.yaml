@@ -63,7 +63,7 @@ jobs:
     - name: Check for code diffs
       id: code-changes
       run: |
-        if [[ -n "$(git --no-pager diff --name-only origin/${GITHUB_BASE_REF} -- apps | tr -d '\n\r')" ]]; then
+        if [[ -n "$(git --no-pager diff --name-only origin/${GITHUB_BASE_REF} -- ${{ inputs.CONTEXT_PATH }}/$(dirname ${{ inputs.DOCKERFILE_PATH }}) | tr -d '\n\r')" ]]; then
           echo "diff detected, proceeding with code build"
           echo "::set-output name=CODE_CHANGES::true"
         else
