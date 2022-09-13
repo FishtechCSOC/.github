@@ -24,7 +24,7 @@
 - [ ] I have made corresponding changes to the documentation. (if applicable)
 
 
-### sematic PR types:
+### semantic PR types:
 - feat
 - fix
 - docs
