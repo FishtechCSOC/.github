@@ -60,7 +60,7 @@ jobs:
         fi
 
     outputs:
-      code_changes: ${{ steps.chart-changes.outputs.CODE_CHANGES }}
+      code_changes: ${{ steps.code-changes.outputs.CODE_CHANGES }}
 
   build:
     runs-on: self-hosted
