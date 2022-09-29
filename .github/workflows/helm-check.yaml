@@ -2,13 +2,6 @@ name: Helm Checks
 
 on:
   workflow_call:
-    inputs:
-
-      # GCP Project containing Artifact Registry repository
-      BASE_BRANCH:
-        required: false
-        type: string
-        default: main
 
 jobs:
 
@@ -76,6 +69,6 @@ jobs:
           echo "${{ needs.check-chart-diffs.outputs.chart_version }} is greater than ${{ env.PROD_CHART_VERSION }}"
           echo "::set-output name=PACKAGE_CHARTS::true"
         else
-          echo "Chart semantic version in pull request must be greater than main branch!"
+          echo "Chart semantic version in pull request must be greater than ${{ github.base_ref }} branch!"
           exit 1
         fi
