@@ -203,7 +203,7 @@ jobs:
             --revision ${{ needs.get-chart-properties.outputs.chart_version }}
             --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }}
             --values ${{ inputs.ARGOCD_VALUES_FILE }}
-            --release-name ${{ inputs.ARGOCD_RELEASE_NAME }}
+            --release-name "${{ inputs.ARGOCD_RELEASE_NAME }}"
             --sync-option Prune=true
             --sync-option CreateNamespace=true
             --sync-option RespectIgnoreDifferences=true
