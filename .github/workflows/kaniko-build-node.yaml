@@ -48,6 +48,11 @@ on:
         type: boolean
         default: true
 
+      CACHE_ENABLED:
+        required: false
+        type: boolean
+        default: true
+
 jobs:
 
   check-code-diffs:
@@ -144,7 +149,7 @@ jobs:
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
           extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
-          cache: true
+          cache: ${{ inputs.CACHE_ENABLED }}
           cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
           tag: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
           tag_with_latest: true
