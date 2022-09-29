@@ -118,10 +118,16 @@ jobs:
       run: |
         echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
         echo "::set-output name=CHART_VERSION::$(cat $(find charts | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')"
+        if [[ -n "${{ inputs.ARGOCD_APP_NAME }}" ]]; then
+          echo echo :set-output name=ARGOCD_APP_NAME::${{ inputs.ARGOCD_APP_NAME }}
+        else
+          echo echo ::set-output name=ARGOCD_APP_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')
+        fi
 
     outputs:
       chart_name: ${{ steps.get-chart-properties.outputs.CHART_NAME }}
       chart_version: ${{ steps.get-chart-properties.outputs.CHART_VERSION }}
+      app_name: ${{ steps.get-chart-properties.outputs.ARGOCD_APP_NAME }}
 
   deploy-argo-app:
     name: Create/update app in ArgoCD
@@ -174,7 +180,7 @@ jobs:
       - name: Create ArgoCD Application
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app create ${{ needs.get-chart-properties.outputs.chart_name }}
+          command: app create ${{ needs.get-chart-properties.outputs.app_name }}
           options: >
             --project ${{ inputs.ARGOCD_PROJECT }}
             --server ${{ inputs.ARGOCD_API_URL }}
@@ -192,7 +198,7 @@ jobs:
       - name: Patch ArgoCD Application for ESO
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app patch ${{ needs.get-chart-properties.outputs.chart_name }}
+          command: app patch ${{ needs.get-chart-properties.outputs.app_name }}
           options: >
             --patch '{"spec":{"ignoreDifferences":[{"kind":"Secret","jsonPointers":["/metadata/labels","/data"],"jqPathExpressions":[".metadata.labels | select(.externalSecretsManaged != null)"]}]}}'
             --type merge
@@ -200,14 +206,14 @@ jobs:
       - name: Refresh ArgoCD Application
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app get ${{ needs.get-chart-properties.outputs.chart_name }} --hard-refresh
+          command: app get ${{ needs.get-chart-properties.outputs.app_name }} --hard-refresh
 
       - name: ArgoCD sync
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app sync ${{ needs.get-chart-properties.outputs.chart_name }} --prune
+          command: app sync ${{ needs.get-chart-properties.outputs.app_name }} --prune
 
       - name: ArgoCD deployment restart
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app actions run ${{ needs.get-chart-properties.outputs.chart_name }} restart --group apps --kind Deployment
+          command: app actions run ${{ needs.get-chart-properties.outputs.app_name }} restart --group apps --kind Deployment
