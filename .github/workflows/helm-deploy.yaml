@@ -36,6 +36,12 @@ on:
         type: string
         default: ''
 
+      # Kind of objects to perform pod restart action on
+      ARGOCD_RESTART_ACTION_KIND:
+        required: false
+        type: string
+        default: 'Deployment'
+
       # Version tag to use when pushing to Production repository. Defaults to 'latest' for dev, GitHub release tag for Prod
       APP_VERSION:
         required: false
@@ -216,4 +222,4 @@ jobs:
       - name: ArgoCD deployment restart
         uses: clowdhaus/argo-cd-action@v1.9.0
         with:
-          command: app actions run ${{ needs.get-chart-properties.outputs.app_name }} restart --group apps --kind Deployment
+          command: app actions run ${{ needs.get-chart-properties.outputs.app_name }} restart --group apps --kind ${{ inputs.ARGOCD_RESTART_ACTION_KIND }}
