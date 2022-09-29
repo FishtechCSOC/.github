@@ -126,9 +126,9 @@ jobs:
         echo "::set-output name=CHART_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')"
         echo "::set-output name=CHART_VERSION::$(cat $(find charts | grep Chart.yaml) | grep -E '^version:' | awk '{print $2}' | tr -d '\n\r')"
         if [[ -n "${{ inputs.ARGOCD_APP_NAME }}" ]]; then
-          echo echo ::set-output name=ARGOCD_APP_NAME::${{ inputs.ARGOCD_APP_NAME }}
+          echo ::set-output name=ARGOCD_APP_NAME::${{ inputs.ARGOCD_APP_NAME }}
         else
-          echo echo ::set-output name=ARGOCD_APP_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')
+          echo ::set-output name=ARGOCD_APP_NAME::$(cat $(find charts | grep Chart.yaml) | grep -E '^name:' | awk '{print $2}' | tr -d '\n\r')
         fi
 
     outputs:
