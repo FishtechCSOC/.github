@@ -30,6 +30,12 @@ on:
         type: string
         default: 'values.yaml'
 
+      # Name of the Application object in ArgoCD
+      ARGOCD_APP_NAME:
+        required: false
+        type: string
+        default: ''
+
       # Version tag to use when pushing to Production repository. Defaults to 'latest' for dev, GitHub release tag for Prod
       APP_VERSION:
         required: false
