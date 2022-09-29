@@ -36,6 +36,12 @@ on:
         type: string
         default: ''
 
+      # Helm Release Name passed to ArgoCD
+      ARGOCD_RELEASE_NAME:
+        required: false
+        type: string
+        default: ''
+
       # Kind of objects to perform pod restart action on
       ARGOCD_RESTART_ACTION_KIND:
         required: false
@@ -197,6 +203,7 @@ jobs:
             --revision ${{ needs.get-chart-properties.outputs.chart_version }}
             --helm-chart ${{ needs.get-chart-properties.outputs.chart_name }}
             --values ${{ inputs.ARGOCD_VALUES_FILE }}
+            --release-name "${{ inputs.ARGOCD_RELEASE_NAME }}"
             --sync-option Prune=true
             --sync-option CreateNamespace=true
             --sync-option RespectIgnoreDifferences=true
