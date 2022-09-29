@@ -2,6 +2,13 @@ name: Helm Checks
 
 on:
   workflow_call:
+    inputs:
+
+      # GCP Project containing Artifact Registry repository
+      BASE_BRANCH:
+        required: false
+        type: string
+        default: main
 
 jobs:
 
@@ -46,11 +53,11 @@ jobs:
     steps:
 
     - uses: actions/checkout@master
-      name: Checkout main
+      name: Checkout ${{ github.base_ref }}
       with:
-        ref: "main"
+        ref: "${{ github.base_ref }}"
 
-    - name: Check main chart version
+    - name: Check ${{ github.base_ref }} chart version
       run: |
         echo "PROD_CHART_VERSION=$(cat $(find charts/${{ needs.check-chart-diffs.outputs.chart_name }} | grep Chart.yaml) \
         | grep -E '^version:' \
