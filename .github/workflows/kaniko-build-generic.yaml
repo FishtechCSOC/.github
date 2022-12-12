@@ -84,7 +84,7 @@ jobs:
       - name: checkout additional repos
         uses: actions/checkout@v3
         with:
-          name: ${{ inputs.ADDITIONAL_REPOS }}
+          repository: ${{ inputs.ADDITIONAL_REPOS }}
           # ref: "refs/heads/release"
       - name: Set environment
         id: set_env
