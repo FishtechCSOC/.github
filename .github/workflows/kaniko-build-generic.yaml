@@ -14,6 +14,11 @@ on:
         type: string
         default: 'Dockerfile'
 
+      # Path to Dockerfile (e.g. path/to/Dockerfile)
+      ADDITIONAL_REPOS:
+        required: false
+        type: string
+
       # Path to Docker context
       CONTEXT_PATH:
         required: false
@@ -76,6 +81,11 @@ jobs:
     steps:
       - name: checkout git
         uses: actions/checkout@v3
+      - name: checkout additional repos
+        uses: actions/checkout@v3
+        with:
+          name: ${{ inputs.ADDITIONAL_REPOS }}
+          ref: "refs/heads/release"
       - name: Set environment
         id: set_env
         run: |
