@@ -115,7 +115,7 @@ jobs:
           password: ${{ steps.set_env.outputs.GCP_ARGO_SERVICE_ACCOUNT }}
           path: ${{ inputs.CONTEXT_PATH }}
           build_file: ${{ inputs.DOCKERFILE_PATH }}
-          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ steps.set_env.outputs.PUSH_FLAG }}
+          extra_args: --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.CI_GITHUB_TOKEN }} ${{ inputs.BUILD_ARGS }} ${{ steps.set_env.outputs.PUSH_FLAG }}
           cache: true
           cache_registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}/${{ inputs.IMAGE }}/cache
           tag: ${{ steps.set_env.outputs.APP_VERSION_TAG }}
