@@ -140,7 +140,7 @@ jobs:
         run: cd ${{ inputs.CONTEXT_PATH }}; npm run lint
 
       - name: Kaniko build
-        uses: aevea/action-kaniko@v0.9.0
+        uses: aevea/action-kaniko@v0.10.0
         with:
           image: ${{ inputs.IMAGE }}
           registry: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ steps.set_env.outputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
