@@ -73,7 +73,7 @@ jobs:
       - name: Get Go version
         id: go_version
         run: echo ::set-output name=GO_VERSION::$(go version | awk '{print $3}')
-      - name: Install goreleaser
+      - name: Run Goreleaser
         uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
