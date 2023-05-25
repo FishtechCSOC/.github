@@ -31,7 +31,7 @@ on:
       GORELEASER_ARGS:
         required: false
         type: string
-        default: "goreleaser release --snapshot --skip-publish --skip-sign --clean --debug"
+        default: "release --snapshot --skip-publish --skip-sign --clean --debug"
 
       GO_MOD_PATH:
         required: false
@@ -84,6 +84,6 @@ jobs:
           CGO_ENABLED: ${{ inputs.CGO_ENABLED }}
           GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
           GOVERSION: ${{ steps.go_version.outputs.GO_VERSION }}
-          REGISTRY: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ inputss.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
+          REGISTRY: ${{ inputs.ARTIFACT_REGISTRY_HOST }}/${{ inputs.GCP_PROJECT }}/${{ inputs.ARTIFACT_REGISTRY_REPO }}
       - name: Docker push
         run: docker push ${REGISTRY}/${{ github.event.repository.name }}:${{ inputs.APPLICATION_VERSION }}
