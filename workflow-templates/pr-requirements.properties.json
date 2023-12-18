@@ -1,0 +1,8 @@
+{
+  "name": "PR Requirements",
+  "description": "Cyderes PR requirements workflow",
+  "iconName": "octicon code-review",
+  "categories": [
+    "code-review"
+  ]
+}

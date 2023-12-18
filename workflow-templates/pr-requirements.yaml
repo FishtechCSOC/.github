@@ -3,7 +3,7 @@ name: "PR Requirements"
 
 on:
   pull_request_target:
-    branches: [main,master]
+    branches: [$default-branch]
     types:
       - opened
       - edited
