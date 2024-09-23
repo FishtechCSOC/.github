@@ -1,4 +1,4 @@
-### Please ensure you've completed the following:
+## Please ensure you've completed the following:
 
 - [ ] I have ensured my commit(s) adhere to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 - [ ] I have ensured my commit(s) adhere to [Semantic Versioning](https://semver.org/)
@@ -8,21 +8,21 @@
 - [ ] I have made corresponding changes to the documentation. (if applicable)
 - [ ] I have resolved all of the outstanding issues and PR checks (if applicable)
 
-### 🛠 What are you changing?
-###    What's the context for the changes? Are there any
+## 🛠 What are you changing?
+> What's the context for the changes? Are there any
 
 `comment here`
 
-### 🧠 What is the reasoning for the change?
-###    Why did you choose to make these changes?
+## 🧠 What is the reasoning for the change?
+> Why did you choose to make these changes?
 
 `comment here`
 
-### 🧪 Does this PR introduce a breaking change? (What changes might users need to make in their application due to this PR?)
-###    How do you know the changes are safe to ship to production?
+## 🧪 Does this PR introduce a breaking change?
+> What changes might users need to make in their application due to this PR?
 
 `comment here`
 
-### ✨ Additional information and comments:
+## ✨ Additional information and comments:
 
 `comment here`
